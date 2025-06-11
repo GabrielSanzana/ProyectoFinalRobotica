@@ -1,0 +1,168 @@
+#VRML_SIM R2025a utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/floors/protos/RectangleArena.proto"
+
+WorldInfo {
+}
+Viewpoint {
+  orientation -0.13666636320095116 -0.05098852912374258 0.9893040357075386 3.8487843523070677
+  position 1.8663826268451844 1.5014000423481222 0.7231389120508301
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+RectangleArena {
+  floorSize 2 2
+}
+Robot {
+  translation 0.00015898212559026763 0.00013015556083340095 0.039522555319496944
+  rotation -0.6317770754177946 0.7751157842257164 0.007297124138391105 0.005124024668961506
+  children [
+    HingeJoint {
+      jointParameters HingeJointParameters {
+        axis 0 1 0
+        anchor 0.05 0.06 0
+      }
+      device [
+        RotationalMotor {
+          name "motor1"
+        }
+      ]
+      endPoint Solid {
+        translation 0.04999995166533293 0.05999995419976664 3.968254068955907e-06
+        rotation 0.9999999999999903 -9.7411849765143e-08 9.801997652798173e-08 1.5708001868808181
+        children [
+          DEF Rueda Shape {
+            appearance PBRAppearance {
+              baseColor 0 1 0
+              metalness 0
+            }
+            geometry Cylinder {
+              height 0.02
+              radius 0.04
+            }
+          }
+        ]
+        name "rueda1"
+        boundingObject USE Rueda
+        physics Physics {
+        }
+      }
+    }
+    HingeJoint {
+      jointParameters HingeJointParameters {
+        position -8.027934748207767e-07
+        axis 0 1 0
+        anchor 0.05 -0.06 0
+      }
+      device [
+        RotationalMotor {
+          name "motor2"
+        }
+      ]
+      endPoint Solid {
+        translation 0.04999999999999936 -0.05999999999999942 -5.312912734135882e-22
+        rotation 0.9999999999998388 -4.0139526300051023e-07 4.0139673741034485e-07 1.5708000000001612
+        children [
+          USE Rueda
+        ]
+        name "rueda2"
+        boundingObject USE Rueda
+        physics Physics {
+        }
+      }
+    }
+    HingeJoint {
+      jointParameters HingeJointParameters {
+        position 2.460000904452588e-09
+        axis 0 1 0
+        anchor -0.05 -0.06 0
+      }
+      device [
+        RotationalMotor {
+          name "motor3"
+        }
+      ]
+      endPoint Solid {
+        translation -0.049999954638838204 -0.05999995703250263 3.9174085164197946e-06
+        rotation 0.9999999999999905 9.802191553109372e-08 -9.745186696514953e-08 1.5707998156745386
+        children [
+          USE Rueda
+        ]
+        name "rueda3"
+        boundingObject USE Rueda
+        physics Physics {
+        }
+      }
+    }
+    HingeJoint {
+      jointParameters HingeJointParameters {
+        position 8.146920481269805e-07
+        axis 0 1 0
+        anchor -0.05 0.06 0
+      }
+      device [
+        RotationalMotor {
+          name "motor4"
+        }
+      ]
+      endPoint Solid {
+        translation -0.050000000000000044 0.06000000000000033 4.0535815018231326e-23
+        rotation 0.9999999999998341 4.073445278007012e-07 -4.0734602406344524e-07 1.5708000000001596
+        children [
+          USE Rueda
+        ]
+        name "rueda4"
+        boundingObject USE Rueda
+        physics Physics {
+        }
+      }
+    }
+    DEF Cuerpo Shape {
+      appearance PBRAppearance {
+        baseColor 1 0 0
+        metalness 0
+      }
+      geometry Box {
+        size 0.2 0.1 0.05
+      }
+    }
+    DistanceSensor {
+      translation 0.1 0.02 0
+      rotation 0 0 1 0.3
+      children [
+        DEF sensorDistancia Shape {
+          appearance PBRAppearance {
+            baseColor 0 0 1
+            metalness 0
+          }
+          geometry Box {
+            size 0.01 0.01 0.01
+          }
+        }
+      ]
+      name "distIzq"
+      boundingObject USE sensorDistancia
+      physics Physics {
+      }
+    }
+    DistanceSensor {
+      translation 0.1 -0.02 0
+      rotation 0 0 1 -0.3
+      children [
+        USE sensorDistancia
+      ]
+      name "distDer"
+      boundingObject USE sensorDistancia
+      physics Physics {
+      }
+    }
+  ]
+  boundingObject USE Cuerpo
+  physics Physics {
+  }
+  controller "my_controller"
+}
