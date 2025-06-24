@@ -8,18 +8,18 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/project
 WorldInfo {
 }
 Viewpoint {
-  orientation 0.1952524135287916 -0.08707647334439075 -0.9768798200398479 3.963304593148477
-  position 4.4954583843399165 -6.106429984001566 3.3733408585357587
+  orientation 0.09835915302414734 0.011286315239702225 -0.995086979165481 2.9141842357616303
+  position -0.32496590695311056 0.2541762599509915 0.5368048218017067
 }
 TexturedBackground {
 }
 TexturedBackgroundLight {
 }
 RectangleArena {
-  floorSize 5 5
+  floorSize 5.5 5.5
 }
 Robot {
-  translation 0 0 0.0397031
+  translation -2 0 0.0397031
   rotation 0.001214870299984249 0.00017388504293690775 -0.9999992469267897 -0.02882530717958609
   children [
     HingeJoint {
@@ -34,8 +34,8 @@ Robot {
         }
       ]
       endPoint Solid {
-        translation 0.05000036744285621 0.060000260355453916 2.149945967412814e-07
-        rotation -0.6498795868920676 0.5374270614749451 -0.537427833420824 4.294167093818385
+        translation 0.05000825233443029 0.06000067095540662 7.612074135080459e-06
+        rotation 0.6498807068480325 -0.5374269690988256 0.5374265714978668 1.989022090958409
         children [
           DEF Rueda Shape {
             appearance PBRAppearance {
@@ -66,8 +66,8 @@ Robot {
         }
       ]
       endPoint Solid {
-        translation 0.05000452601792477 -0.0599996937541237 3.967625395409499e-07
-        rotation 0.297321526262121 -0.675129295211573 0.6751298725195676 2.5636016142081948
+        translation 0.05001092510669232 -0.059999283239963785 8.675617962676796e-06
+        rotation -0.2973226988783414 0.6751302550205651 -0.6751283962977455 3.7195811203135536
         children [
           USE Rueda
         ]
@@ -89,8 +89,8 @@ Robot {
         }
       ]
       endPoint Solid {
-        translation -0.049998509800026576 -0.06000026297843092 -1.4741468503770884e-06
-        rotation 0.29732479030252296 -0.6751286417336344 0.6751290885323034 2.5635955487709947
+        translation -0.049990982090307994 -0.0600006734943581 6.80045476866652e-06
+        rotation -0.29732597430555796 0.6751296004934318 -0.6751276083384754 3.7195871607636315
         children [
           USE Rueda
         ]
@@ -112,8 +112,8 @@ Robot {
         }
       ]
       endPoint Solid {
-        translation -0.049995629878574484 0.05999969365514608 1.1076872791359201e-06
-        rotation -0.6498832853181681 0.5374248742171395 -0.5374255483662423 4.294172433650379
+        translation -0.04998960928037487 0.059999282978267565 9.358991434998793e-06
+        rotation 0.6498844130711621 -0.5374247722279122 0.5374242866143359 1.9890167781535844
         children [
           USE Rueda
         ]
@@ -132,28 +132,68 @@ Robot {
         size 0.2 0.1 0.05
       }
     }
-    Lidar {
-      translation 0 0 0.06
+    InertialUnit {
+      translation 0.1 0 0.05
       children [
-        DEF Lidar Shape {
+        DEF IMU Shape {
           appearance PBRAppearance {
             metalness 0
           }
-          geometry Cylinder {
-            height 0.08
-            radius 0.05
+          geometry Cone {
+            bottomRadius 0.02
+            height 0.03
+          }
+        }
+      ]
+      name "imu"
+      boundingObject Shape {
+        appearance PBRAppearance {
+        }
+        geometry Box {
+          size 0.05 0.05 0.05
+        }
+      }
+      physics Physics {
+      }
+    }
+    Lidar {
+      translation 0 0 0.08
+      children [
+        DEF Lidar Shape {
+          appearance PBRAppearance {
+            baseColor 0.3 0.5 0.5
+            metalness 0
+          }
+          geometry Box {
+            size 0.01 0.01 0.01
           }
         }
       ]
       boundingObject USE Lidar
       physics Physics {
       }
+      fieldOfView 1.8
       numberOfLayers 1
-      maxRange 0.8
+      maxRange 1.5
     }
     Display {
     }
     GPS {
+      translation 0 0 0.05
+      children [
+        DEF GPS Shape {
+          appearance PBRAppearance {
+            baseColor 0.6 0.5 0.3
+          }
+          geometry Cylinder {
+            height 0.05
+            radius 0.02
+          }
+        }
+      ]
+      boundingObject USE GPS
+      physics Physics {
+      }
     }
     DistanceSensor {
       translation 0.1 0.02 0
@@ -190,7 +230,8 @@ Robot {
   physics Physics {
   }
   controller "my_controller"
+  window "<none>"
 }
 WoodenBox {
-  translation 0 1.54 0.3
+  translation 0.58 -0.06 0.3
 }
