@@ -8,8 +8,8 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/project
 WorldInfo {
 }
 Viewpoint {
-  orientation 0.09835915302414734 0.011286315239702225 -0.995086979165481 2.9141842357616303
-  position -0.32496590695311056 0.2541762599509915 0.5368048218017067
+  orientation 0.4451019140909778 0.09452478724072308 -0.8904770354532697 2.7677853133956063
+  position 0.08331536582571386 0.46250962223486364 2.570339729858674
 }
 TexturedBackground {
 }
@@ -19,12 +19,11 @@ RectangleArena {
   floorSize 5.5 5.5
 }
 Robot {
-  translation -2 0 0.0397031
-  rotation 0.001214870299984249 0.00017388504293690775 -0.9999992469267897 -0.02882530717958609
+  translation -2 0 0
   children [
     HingeJoint {
       jointParameters HingeJointParameters {
-        position 224.8127318172125
+        position 408.27761373779555
         axis 0 1 0
         anchor 0.05 0.06 0
       }
@@ -34,8 +33,8 @@ Robot {
         }
       ]
       endPoint Solid {
-        translation 0.05000825233443029 0.06000067095540662 7.612074135080459e-06
-        rotation 0.6498807068480325 -0.5374269690988256 0.5374265714978668 1.989022090958409
+        translation 0.0500098122347557 0.06000067095540662 -5.455707588057046e-06
+        rotation -0.9958264627324172 0.06453866512172883 -0.06453229289392248 4.708198682207355
         children [
           DEF Rueda Shape {
             appearance PBRAppearance {
@@ -56,7 +55,7 @@ Robot {
     }
     HingeJoint {
       jointParameters HingeJointParameters {
-        position 173.6172631820924
+        position 338.11206356512434
         axis 0 1 0
         anchor 0.05 -0.06 0
       }
@@ -66,8 +65,8 @@ Robot {
         }
       ]
       endPoint Solid {
-        translation 0.05001092510669232 -0.059999283239963785 8.675617962676796e-06
-        rotation -0.2973226988783414 0.6751302550205651 -0.6751283962977455 3.7195811203135536
+        translation 0.05001249536424314 -0.059999283239963785 -6.204045108189392e-06
+        rotation -0.726146445193021 0.48616673198290244 -0.48616175173146187 4.397706249886574
         children [
           USE Rueda
         ]
@@ -79,7 +78,7 @@ Robot {
     }
     HingeJoint {
       jointParameters HingeJointParameters {
-        position 173.61727191872484
+        position 357.08215280193633
         axis 0 1 0
         anchor -0.05 -0.06 0
       }
@@ -89,8 +88,8 @@ Robot {
         }
       ]
       endPoint Solid {
-        translation -0.049990982090307994 -0.0600006734943581 6.80045476866652e-06
-        rotation -0.29732597430555796 0.6751296004934318 -0.6751276083384754 3.7195871607636315
+        translation -0.049990719032170484 -0.0600006734943581 -6.4368094908376015e-06
+        rotation 0.7702191414073273 -0.45098080411201696 0.4509753746406097 1.8289643586007773
         children [
           USE Rueda
         ]
@@ -102,7 +101,7 @@ Robot {
     }
     HingeJoint {
       jointParameters HingeJointParameters {
-        position 224.81274137329703
+        position 389.30754818121534
         axis 0 1 0
         anchor -0.05 0.06 0
       }
@@ -112,8 +111,8 @@ Robot {
         }
       ]
       endPoint Solid {
-        translation -0.04998960928037487 0.059999282978267565 9.358991434998793e-06
-        rotation 0.6498844130711621 -0.5374247722279122 0.5374242866143359 1.9890167781535844
+        translation -0.0499871130854888 0.059999282978267565 -5.430028488806912e-06
+        rotation 0.984582488143259 -0.12369070389517509 0.12368481641472885 1.586341627892727
         children [
           USE Rueda
         ]
@@ -172,9 +171,12 @@ Robot {
       boundingObject USE Lidar
       physics Physics {
       }
-      fieldOfView 1.8
+      fieldOfView 0.25
+      verticalFieldOfView 3
       numberOfLayers 1
       maxRange 1.5
+      defaultFrequency 1
+      maxFrequency 700
     }
     Display {
     }
@@ -234,4 +236,5 @@ Robot {
 }
 WoodenBox {
   translation 0.58 -0.06 0.3
+  size 0.4 0.4 0.6
 }
