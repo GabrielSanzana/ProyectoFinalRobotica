@@ -10,6 +10,7 @@ GOAL_CELL = (5, 0)
 OBSTACLE_MAPPING_DIST = 1.5
 IMMINENT_COLLISION_DIST = 0.2
 KP, KI, KD = 2.8, 0.05, 0.5
+BORDER_CHECK_DELAY = 5.0  # segundos
 
 # --- Estados ---
 STATE_FOLLOW_PATH = 0
@@ -61,8 +62,7 @@ previous_error = 0.0
 total_path_length = None
 total_path_distance = None
 
-def heuristic(a,b): return ((a.x-b.x)**2+(a.y-b.y)**2)**0.5
-
+def heuristic(a,b): return abs(a.x-b.x)+abs(a.y-b.y)
 def plan_path(grid, start, goal):
     open_list = [Node(start.x,start.y,0,heuristic(start,goal))]
     closed = set()
@@ -156,18 +156,25 @@ while robot.step(TIME_STEP)!=-1:
     if grid[cx][cy]==0:
         grid[cx][cy]=2
 
-    lidar_ranges = lidar.getRangeImage()
-    collision_imminent = any(0<d<IMMINENT_COLLISION_DIST for d in lidar_ranges)
-    mapped=False
-    for i,d in enumerate(lidar_ranges):
-        if 0 < d < OBSTACLE_MAPPING_DIST:
-            rel_angle = i*lidar.getFov()/lidar.getHorizontalResolution() - lidar.getFov()/2
-            glob_angle = normalize(yaw+rel_angle)
-            ox,oz = rx+math.cos(glob_angle)*d, ry+math.sin(glob_angle)*d
-            ocx,ocy = gps_to_cell(ox,oz)
-            if 0<=ocx<GRID_SIZE and 0<=ocy<GRID_SIZE and grid[ocx][ocy] == 0:
-                grid[ocx][ocy]=1
-                mapped=True
+    # Solo leer y mapear con el Lidar si el robot está siguiendo el camino
+    if state == STATE_FOLLOW_PATH:
+        lidar_ranges = lidar.getRangeImage()
+        collision_imminent = any(0<d<IMMINENT_COLLISION_DIST for d in lidar_ranges)
+        mapped=False
+        for i,d in enumerate(lidar_ranges):
+            if 0 < d < OBSTACLE_MAPPING_DIST:
+                rel_angle = i*lidar.getFov()/lidar.getHorizontalResolution() - lidar.getFov()/2
+                glob_angle = normalize(yaw+rel_angle)
+                ox,oz = rx+math.cos(glob_angle)*d, ry+math.sin(glob_angle)*d
+                ocx,ocy = gps_to_cell(ox,oz)
+                if 0<=ocx<GRID_SIZE and 0<=ocy<GRID_SIZE and grid[ocx][ocy] == 0:
+                    grid[ocx][ocy]=1
+                    mapped=True
+    else:
+        # No consideramos colisiones inminentes ni mapeamos si estamos girando o moviendo después de un giro.
+        collision_imminent = False
+        mapped = False
+
 
     should_replan = mapped or previous_cell != cell or not path
     if should_replan:
@@ -209,7 +216,7 @@ while robot.step(TIME_STEP)!=-1:
         if math.hypot(rx - forward_start_pos.x, ry - forward_start_pos.y) < CELL_SIZE * 0.7:
             set_vel(SPEED * 0.7, SPEED * 0.7)
         else:
-            state = STATE_FOLLOW_PATH
+            state = STATE_FOLLOW_PATH # El Lidar se "enciende" de nuevo aquí
             stop()
 
     elif state == STATE_FOLLOW_PATH:
@@ -217,6 +224,28 @@ while robot.step(TIME_STEP)!=-1:
             stop()
             state = STATE_STOP
         else:
+            # Detectar si estamos en el borde y si pasó suficiente tiempo desde inicio
+            if (cx == 0 or cx == GRID_SIZE-1 or cy == 0 or cy == GRID_SIZE-1) and (robot.getTime() - start_navigation_time) > BORDER_CHECK_DELAY:
+                # Calcular ángulo directo hacia la meta
+                goal_x = GOAL_CELL[0]*CELL_SIZE + CELL_SIZE/2 - (GRID_SIZE*CELL_SIZE)/2
+                goal_z = (GRID_SIZE*CELL_SIZE)/2 - (GOAL_CELL[1]*CELL_SIZE + CELL_SIZE/2)
+                dx = goal_x - rx
+                dz = goal_z - ry
+                desired_yaw = math.atan2(dz, dx)
+                err = normalize(desired_yaw - yaw)
+                if abs(err) > 0.05:
+                    # Girar hacia la meta
+                    v = SPEED * 0.6
+                    set_vel(-v if err > 0 else v, v if err > 0 else -v)
+                else:
+                    # Cuando ya está orientado, avanzar adelante suavemente
+                    set_vel(SPEED * 0.7, SPEED * 0.7)
+                # Actualizar display y continuar al siguiente ciclo
+                update_display(cell, path)
+                previous_cell = cell
+                continue
+
+            # Navegación normal por waypoints
             wp = path[0]
             tx = wp.x*CELL_SIZE + CELL_SIZE/2 - (GRID_SIZE*CELL_SIZE)/2
             tz = (GRID_SIZE*CELL_SIZE)/2 - (wp.y*CELL_SIZE + CELL_SIZE/2)

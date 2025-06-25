@@ -8,18 +8,18 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/project
 WorldInfo {
 }
 Viewpoint {
-  orientation 0.5638331984110128 0.040805879864720895 -0.8248799940222052 2.748275164717096
-  position 3.162569290657949 2.729340193287313 10.796364329743657
+  orientation 0.6121543945743271 0.08030214099791243 -0.7866502166493633 2.6827193104125375
+  position 1.380757701879212 2.437142834054749 9.13248754057644
 }
 TexturedBackground {
 }
 TexturedBackgroundLight {
 }
 RectangleArena {
-  floorSize 5.5 5.5
+  floorSize 5 5
 }
 Robot {
-  translation -2 0 0.0397031
+  translation -2.25 -0.25 0.0397031
   children [
     HingeJoint {
       jointParameters HingeJointParameters {
@@ -33,7 +33,7 @@ Robot {
         }
       ]
       endPoint Solid {
-        translation 0.0500098122347557 0.06000067095540662 -5.455707588049765e-06
+        translation 0.0500098122347557 0.06000067095540662 -5.455707588047639e-06
         rotation -0.9958264627324172 0.06453866512172883 -0.06453229289392248 4.708198682207355
         children [
           DEF Rueda Shape {
@@ -111,7 +111,7 @@ Robot {
         }
       ]
       endPoint Solid {
-        translation -0.0499871130854888 0.059999282978267565 -5.43002848880409e-06
+        translation -0.0499871130854888 0.059999282978267565 -5.430028488803895e-06
         rotation 0.984582488143259 -0.12369070389517509 0.12368481641472885 1.586341627892727
         children [
           USE Rueda
@@ -171,12 +171,10 @@ Robot {
       boundingObject USE Lidar
       physics Physics {
       }
+      horizontalResolution 128
       fieldOfView 0.25
-      verticalFieldOfView 3
+      verticalFieldOfView 0.1
       numberOfLayers 1
-      maxRange 1.5
-      defaultFrequency 1
-      maxFrequency 700
     }
     Display {
     }
@@ -235,10 +233,11 @@ Robot {
   window "<none>"
 }
 WoodenBox {
+  translation -0.23 -0.24 0.3
   size 0.5 0.5 0.5
 }
 WoodenBox {
-  translation -0.61 1.27 0.3
+  translation -2.27 2.24 0.3
   name "wooden box(1)"
   size 0.5 0.5 0.5
 }
