@@ -10,4 +10,4 @@ orthographicViewHeight: 1
 textFiles: 0 "controllers/my_controller/my_controller.py"
 globalOptionalRendering: DistanceSensorRays::LidarPointClouds::LidarRaysPaths
 consoles: Console:All:All
-renderingDevicePerspectives: robot:display;1;3.89063;0;0
+renderingDevicePerspectives: robot:display;1;4.89063;0;0

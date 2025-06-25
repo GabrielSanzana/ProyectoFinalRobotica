@@ -8,8 +8,8 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/project
 WorldInfo {
 }
 Viewpoint {
-  orientation 0.4451019140909778 0.09452478724072308 -0.8904770354532697 2.7677853133956063
-  position -1.0705048404187665 0.3990175539779344 1.189455372513659
+  orientation 0.5638331984110128 0.040805879864720895 -0.8248799940222052 2.748275164717096
+  position 3.162569290657949 2.729340193287313 10.796364329743657
 }
 TexturedBackground {
 }
@@ -19,7 +19,7 @@ RectangleArena {
   floorSize 5.5 5.5
 }
 Robot {
-  translation -2 0 0.05
+  translation -2 0 0.0397031
   children [
     HingeJoint {
       jointParameters HingeJointParameters {
@@ -33,7 +33,7 @@ Robot {
         }
       ]
       endPoint Solid {
-        translation 0.0500098122347557 0.06000067095540662 -5.455707588056789e-06
+        translation 0.0500098122347557 0.06000067095540662 -5.455707588049765e-06
         rotation -0.9958264627324172 0.06453866512172883 -0.06453229289392248 4.708198682207355
         children [
           DEF Rueda Shape {
@@ -65,8 +65,8 @@ Robot {
         }
       ]
       endPoint Solid {
-        translation 0.05001249536424314 -0.059999283239963785 -6.204045108190108e-06
-        rotation -0.726146445193021 0.4861667319829025 -0.48616175173146187 4.397706249886574
+        translation 0.05001249536424314 -0.059999283239963785 -6.20404510819023e-06
+        rotation -0.726146445193021 0.4861667319829026 -0.4861617517314618 4.397706249886574
         children [
           USE Rueda
         ]
@@ -88,7 +88,7 @@ Robot {
         }
       ]
       endPoint Solid {
-        translation -0.049990719032170484 -0.0600006734943581 -6.436809490838176e-06
+        translation -0.049990719032170484 -0.0600006734943581 -6.436809490838355e-06
         rotation 0.7702191414073273 -0.45098080411201696 0.45097537464060977 1.8289643586007773
         children [
           USE Rueda
@@ -111,7 +111,7 @@ Robot {
         }
       ]
       endPoint Solid {
-        translation -0.0499871130854888 0.059999282978267565 -5.430028488806722e-06
+        translation -0.0499871130854888 0.059999282978267565 -5.43002848880409e-06
         rotation 0.984582488143259 -0.12369070389517509 0.12368481641472885 1.586341627892727
         children [
           USE Rueda
@@ -235,6 +235,10 @@ Robot {
   window "<none>"
 }
 WoodenBox {
-  translation 0.58 -0.06 0.3
-  size 0.4 0.4 0.6
+  size 0.5 0.5 0.5
+}
+WoodenBox {
+  translation -0.61 1.27 0.3
+  name "wooden box(1)"
+  size 0.5 0.5 0.5
 }
