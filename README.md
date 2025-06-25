@@ -26,7 +26,7 @@ El desarrollo integra percepción, planificación y control en un entorno dinám
 
 El sistema de control del robot se organiza en tres niveles principales:
 
-### 1️⃣ Percepción
+###  Percepción
 
 * **LIDAR 2D (1 capa, 128 resoluciones, `maxRange 0.8`):**
     * Obtiene un mapa parcial del entorno en cada ciclo.
@@ -38,7 +38,7 @@ El sistema de control del robot se organiza en tres niveles principales:
 * **GPS:**
     * Obtiene la posición actual del robot en el entorno simulado (coordenadas X, Z).
 
-### 2️⃣ Planificación
+###  Planificación
 
 * **Grilla de ocupación:**
     * Mapa 2D representado como una matriz `grid[8][8]`.
@@ -47,7 +47,7 @@ El sistema de control del robot se organiza en tres niveles principales:
     * Calcula la ruta óptima desde la posición actual hacia el objetivo.
     * Se ejecuta en cada ciclo para ajustar el plan en función de los cambios en el mapa.
 
-### 3️⃣ Control
+###  Control
 
 * **Control de navegación:**
     * Si se detecta un obstáculo cercano → evasión reactiva (giro en el lugar o ajuste de velocidad de las ruedas).
