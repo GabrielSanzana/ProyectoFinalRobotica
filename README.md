@@ -1,4 +1,4 @@
-# Proyecto Final: Robótica y Sistemas Autónomos 2025-01More actions
+# Proyecto Final: Robótica y Sistemas Autónomos 2025-01
 
 **Integrantes:**
 * Patricio Figueroa
@@ -96,4 +96,4 @@ Aquí se presentarán los diagramas que representan el sistema del robot y su in
 [ **ESPACIO PARA EL VIDEO DE DEMOSTRACIÓN** - ]
 
 ```bash
-git clone https://github.com/tu_usuario/tu_repositorio.git]
+git clone https://github.com/GabrielSanzana/ProyectoFinalRobotica.git]
