@@ -8,8 +8,8 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/project
 WorldInfo {
 }
 Viewpoint {
-  orientation 0.6121543945743271 0.08030214099791243 -0.7866502166493633 2.6827193104125375
-  position 1.380757701879212 2.437142834054749 9.13248754057644
+  orientation 0.3630762930919126 0.04743643880809859 -0.9305511214693373 2.4567224313119747
+  position 3.6980050589231976 4.309247165473475 4.016907946409301
 }
 TexturedBackground {
 }
@@ -33,7 +33,7 @@ Robot {
         }
       ]
       endPoint Solid {
-        translation 0.0500098122347557 0.06000067095540662 -5.455707588047639e-06
+        translation 0.0500098122347557 0.06000067095540662 -5.455707588046219e-06
         rotation -0.9958264627324172 0.06453866512172883 -0.06453229289392248 4.708198682207355
         children [
           DEF Rueda Shape {
@@ -111,7 +111,7 @@ Robot {
         }
       ]
       endPoint Solid {
-        translation -0.0499871130854888 0.059999282978267565 -5.430028488803895e-06
+        translation -0.0499871130854888 0.059999282978267565 -5.430028488803834e-06
         rotation 0.984582488143259 -0.12369070389517509 0.12368481641472885 1.586341627892727
         children [
           USE Rueda
@@ -233,11 +233,25 @@ Robot {
   window "<none>"
 }
 WoodenBox {
-  translation -0.23 -0.24 0.3
-  size 0.5 0.5 0.5
+  translation -0.23 -0.24 0.14
+  size 0.25 0.25 0.25
 }
 WoodenBox {
   translation -2.27 2.24 0.3
   name "wooden box(1)"
   size 0.5 0.5 0.5
+}
+Solid {
+  translation -0.77 -0.15 0
+  rotation 0 0 1 -1.5707953071795862
+  children [
+    Shape {
+      appearance PBRAppearance {
+      }
+      geometry Box {
+        size 0.9 0.05 0.6
+      }
+    }
+  ]
+  name "solid(1)"
 }
