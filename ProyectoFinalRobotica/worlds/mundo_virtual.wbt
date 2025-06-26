@@ -4,12 +4,13 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/project
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/floors/protos/RectangleArena.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/factory/containers/protos/WoodenBox.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/obstacles/protos/OilBarrel.proto"
 
 WorldInfo {
 }
 Viewpoint {
-  orientation -0.5813323887369632 0.6509448235427675 0.4881838695699107 2.141074484091517
-  position 0.021999641893414024 0.9211670051073672 7.7568078571101085
+  orientation -0.6793294424863694 0.04759976243857723 0.732288038402205 3.039065729688855
+  position 0.2918911125737143 -0.7584312897114386 7.37354209724537
 }
 TexturedBackground {
 }
@@ -242,12 +243,17 @@ WoodenBox {
   size 0.3 0.8 0.6
 }
 WoodenBox {
+  translation -1.81 1.56 0.3
+  name "wooden box(8)"
+  size 0.3 0.8 0.6
+}
+WoodenBox {
   translation -0.64 -0.73 0.3
   name "wooden box(2)"
   size 0.3 0.8 0.6
 }
 WoodenBox {
-  translation -0.64 0.13 0.3
+  translation -0.64 0.08 0.3
   name "wooden box(4)"
   size 0.3 0.8 0.6
 }
@@ -262,10 +268,10 @@ WoodenBox {
   size 0.3 0.8 0.6
 }
 WoodenBox {
-  translation 0.05 -0.96 0.3
+  translation 0.02 -0.96 0.3
   rotation 0 0 1 -1.5707953071795862
   name "wooden box(1)"
-  size 0.3 0.8 0.6
+  size 0.3 1 0.6
 }
 WoodenBox {
   translation 1.24 -0.96 0.3
@@ -278,4 +284,21 @@ WoodenBox {
   rotation 0 0 1 -1.5707953071795862
   name "wooden box(6)"
   size 0.3 1.4 0.6
+}
+OilBarrel {
+  translation -1.45 1.79 0.44
+  height 0.72
+  radius 0.2
+}
+OilBarrel {
+  translation -1.63 -0.02 0.44
+  name "oil barrel(2)"
+  height 0.72
+  radius 0.2
+}
+OilBarrel {
+  translation 0.07 0.79 0.44
+  name "oil barrel(1)"
+  height 0.72
+  radius 0.2
 }
