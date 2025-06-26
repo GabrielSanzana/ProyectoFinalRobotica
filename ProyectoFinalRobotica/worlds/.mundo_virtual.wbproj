@@ -7,7 +7,7 @@ centralWidgetVisible: 1
 projectionMode: PERSPECTIVE
 renderingMode: PLAIN
 orthographicViewHeight: 1
-textFiles: 0 "../../Documents/GitHub/ProyectoFinalRobotica/ProyectoFinalRobotica/controllers/my_controller/my_controller.py"
+textFiles: 0 "controllers/my_controller/my_controller.py"
 globalOptionalRendering: DistanceSensorRays::LidarPointClouds::LidarRaysPaths
 consoles: Console:All:All
 renderingDevicePerspectives: robot:display;1;1.03906;0;0

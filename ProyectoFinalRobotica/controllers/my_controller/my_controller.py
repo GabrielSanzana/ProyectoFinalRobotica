@@ -152,6 +152,24 @@ def dibujar_ruta(path):
         if line_clear:
             display.drawLine(px1, py1, px2, py2)
 
+def ruta_bloqueada(path):
+    if path is None or len(path) < 2:
+        return True
+    for i in range(len(path) -1):
+        p1 = path[i]
+        p2 = path[i+1]
+        steps = 20
+        for step in range(steps + 1):
+            interp_x = p1[0] + (p2[0] - p1[0]) * step / steps
+            interp_y = p1[1] + (p2[1] - p1[1]) * step / steps
+            try:
+                px, py = world2map(interp_x, interp_y)
+            except ValueError:
+                return True  # Coordenada inválida = bloqueada
+            if (px, py) in obstacle_map_pixels:
+                return True  # Obstáculo en el camino
+    return False  # No bloqueada
+
 robot = Robot()
 
 wheels = []
@@ -305,7 +323,7 @@ while robot.step(TIME_STEP) != -1:
     if not rotating_to_path and moved_distance > MOVEMENT_THRESHOLD:
         for i in range(resolution):
             # Corregir cálculo del ángulo relativo para que coincida derecha= derecha en mapa
-            lidar_angle_relative = fov / 2 - i * (fov / resolution)  # <-- CORRECCIÓN AQUÍ
+            lidar_angle_relative = fov / 2 - i * (fov / resolution)
             dist = ranges[i]
             if math.isinf(dist) or dist > lidar.getMaxRange() or dist < 0.1:
                 continue
@@ -334,11 +352,10 @@ while robot.step(TIME_STEP) != -1:
             rotating_to_path = False
             lidar.enable(TIME_STEP)
 
-    elif planned_path is not None and path_index < len(planned_path):
-        def is_path_valid(path, idx):
-            return True  # Implementa tu validación real si quieres
-
-        if not is_path_valid(planned_path, path_index):
+    elif planned_path is not None:
+        # Verificar si la ruta está bloqueada
+        if ruta_bloqueada(planned_path):
+            print("Ruta bloqueada, replanificando...")
             start = [robot_x, robot_y]
             planned_path = rrt(start, goal_point, obstacle_check, sample, steer)
             path_index = 0
@@ -350,20 +367,37 @@ while robot.step(TIME_STEP) != -1:
                 target_yaw_for_path = math.atan2(dy, dx)
                 rotating_to_path = True
         else:
-            target_pos = planned_path[path_index]
-            dx = target_pos[0] - robot_x
-            dy = target_pos[1] - robot_y
-            dist_to_target = math.sqrt(dx*dx + dy*dy)
-            if dist_to_target < 0.1:
-                path_index += 1
-                if path_index >= len(planned_path):
-                    print("¡Llegó a la meta!")
-                    reached_goal = True
-                    for w in wheels:
-                        w.setVelocity(0.0)
-                    lidar.disable()
-                    continue
+            if path_index < len(planned_path):
+                target_pos = planned_path[path_index]
+                dx = target_pos[0] - robot_x
+                dy = target_pos[1] - robot_y
+                dist_to_target = math.sqrt(dx*dx + dy*dy)
+                if dist_to_target < 0.1:
+                    path_index += 1
+                    if path_index >= len(planned_path):
+                        print("¡Llegó a la meta!")
+                        reached_goal = True
+                        for w in wheels:
+                            w.setVelocity(0.0)
+                        lidar.disable()
+                        continue
+                else:
+                    target_angle = math.atan2(dy, dx)
+                    diff = angle_diff(target_angle, yaw)
+                    Kp_angular = 5.0
+                    turn_speed = Kp_angular * diff
+                    max_turn_speed = SPEED
+                    turn_speed = max(-max_turn_speed, min(max_turn_speed, turn_speed))
+                    if abs(diff) > ANGLE_THRESHOLD:
+                        left_speed = -turn_speed
+                        right_speed = turn_speed
+                    else:
+                        left_speed = SPEED
+                        right_speed = SPEED
             else:
+                # Sin más puntos, avanzar hacia goal directamente
+                dx = goal.x - robot_x
+                dy = goal.y - robot_y
                 target_angle = math.atan2(dy, dx)
                 diff = angle_diff(target_angle, yaw)
                 Kp_angular = 5.0
@@ -376,6 +410,7 @@ while robot.step(TIME_STEP) != -1:
                 else:
                     left_speed = SPEED
                     right_speed = SPEED
+
     else:
         if turning:
             turned_angle = angle_diff(yaw, turn_start_yaw)

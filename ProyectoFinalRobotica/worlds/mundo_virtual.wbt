@@ -9,7 +9,7 @@ WorldInfo {
 }
 Viewpoint {
   orientation -0.5813323887369632 0.6509448235427675 0.4881838695699107 2.141074484091517
-  position 0.34664222350986895 0.31876565272126534 7.8554519065277
+  position 0.021999641893414024 0.9211670051073672 7.7568078571101085
 }
 TexturedBackground {
 }
@@ -238,12 +238,27 @@ Robot {
   window "<none>"
 }
 WoodenBox {
-  translation -1.28 -1.56 0.3
+  translation -1.81 -1.56 0.3
   size 0.3 0.8 0.6
 }
 WoodenBox {
-  translation -1.26 0.12 0.3
+  translation -0.64 -0.73 0.3
   name "wooden box(2)"
+  size 0.3 0.8 0.6
+}
+WoodenBox {
+  translation -0.64 0.13 0.3
+  name "wooden box(4)"
+  size 0.3 0.8 0.6
+}
+WoodenBox {
+  translation 0.69 0.13 0.3
+  name "wooden box(7)"
+  size 0.3 0.8 0.6
+}
+WoodenBox {
+  translation -0.64 0.88 0.3
+  name "wooden box(5)"
   size 0.3 0.8 0.6
 }
 WoodenBox {
@@ -253,8 +268,14 @@ WoodenBox {
   size 0.3 0.8 0.6
 }
 WoodenBox {
-  translation 1.24 0.31 0.3
+  translation 1.24 -0.96 0.3
   rotation 0 0 1 -1.5707953071795862
   name "wooden box(3)"
+  size 0.3 1.4 0.6
+}
+WoodenBox {
+  translation 1.24 1.13 0.3
+  rotation 0 0 1 -1.5707953071795862
+  name "wooden box(6)"
   size 0.3 1.4 0.6
 }
