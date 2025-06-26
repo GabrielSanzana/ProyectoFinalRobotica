@@ -3,268 +3,268 @@ import math
 
 # --- Constantes ---
 TIME_STEP = 64
-GRID_SIZE = 10
-CELL_SIZE = 0.5
-SPEED = 4.0
-GOAL_CELL = (4, 0)
-OBSTACLE_MAPPING_DIST = 1.5
-IMMINENT_COLLISION_DIST = 0.2
-KP, KI, KD = 2.8, 0.05, 0.5
-BORDER_CHECK_DELAY = 5.0  # segundos
+CELL_SIZE = 0.5 # Tamaño de cada "celda" en el mapa, ajustar según el nivel de detalle deseado
+GRID_SIZE = 8 # Tamaño del mapa en unidades de CELL_SIZE (8x8 celdas)
+DISPLAY_WIDTH = 256 # Ancho del display en píxeles (idealmente un múltiplo de GRID_SIZE * (DISPLAY_WIDTH / GRID_SIZE) )
+DISPLAY_HEIGHT = 256 # Alto del display en píxeles (idealmente un múltiplo de GRID_SIZE * (DISPLAY_HEIGHT / GRID_SIZE) )
+SPEED = 6.0 # Velocidad lineal del robot
+ANGLE_THRESHOLD = 0.05 # radianes para considerar alineado, valor más ajustado
+GOAL_REACHED_THRESHOLD = 0.1 # Distancia para considerar que la meta ha sido alcanzada (en metros)
 
-# --- Estados ---
-STATE_FOLLOW_PATH = 0
-STATE_TURN = 1
-STATE_STOP = 2
-STATE_MOVE_FORWARD_AFTER_TURN = 3
+# --- Mapeo de colores para el display ---
+COLOR_BACKGROUND = 0xFFFFFF # Blanco
+COLOR_OBSTACLE = 0xFF0000 # Rojo
+COLOR_GOAL = 0x00FF00 # Verde
+COLOR_ROBOT = 0x0000FF # Azul
+COLOR_TRAIL = 0x000000 # Negro (para el rastro del robot, opcional)
 
+# --- Clase para puntos (simplificación) ---
 class Point:
-    def __init__(self, x, y): self.x, self.y = x, y
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
 
-class Node:
-    def __init__(self, x, y, g=0, h=0, parent=None):
-        self.x, self.y, self.g, self.h, self.parent = x, y, g, h, parent
-        self.f = g + h
-
-# — Inicialización Robot y dispositivos —
-robot = Robot()
-motors = []
-for name in ["motor1","motor2","motor3","motor4"]:
-    m = robot.getDevice(name)
-    m.setPosition(float('inf'))
-    m.setVelocity(0.0)
-    motors.append(m)
-
-ds_left  = robot.getDevice("distIzq");  ds_left.enable(TIME_STEP)
-ds_right = robot.getDevice("distDer");  ds_right.enable(TIME_STEP)
-gps      = robot.getDevice("gps");      gps.enable(TIME_STEP)
-imu      = robot.getDevice("imu");      imu.enable(TIME_STEP)
-lidar    = robot.getDevice("lidar");    lidar.enable(TIME_STEP); lidar.enablePointCloud()
-display  = robot.getDevice("display")
-cell_px  = display.getWidth() // GRID_SIZE
-offset_x = (display.getWidth()  - cell_px * GRID_SIZE)//2
-offset_y = (display.getHeight() - cell_px * GRID_SIZE)//2
-
-# Variables para métricas
-start_navigation_time = robot.getTime()
-path_planning_time = 0.0
-
-# — Variables globales —
-grid = [[0]*GRID_SIZE for _ in range(GRID_SIZE)]
-path = []
-state = STATE_FOLLOW_PATH
-previous_cell = None
-yaw = 0.0
-turn_target_yaw = None
-forward_start_pos = None
-integral_error = 0.0
-previous_error = 0.0
-total_path_length = None
-total_path_distance = None
-
-def heuristic(a,b): return abs(a.x-b.x)+abs(a.y-b.y)
-def plan_path(grid, start, goal):
-    open_list = [Node(start.x,start.y,0,heuristic(start,goal))]
-    closed = set()
-    while open_list:
-        open_list.sort(key=lambda n: n.f)
-        current = open_list.pop(0)
-        if (current.x,current.y)==(goal.x,goal.y):
-            rev=[]
-            n=current
-            while n:
-                rev.append(Point(n.x,n.y))
-                n=n.parent
-            return rev[::-1]
-        closed.add((current.x,current.y))
-        for dx,dy in [(0,1),(1,0),(0,-1),(-1,0)]:
-            nx,ny=current.x+dx,current.y+dy
-            if not (0<=nx<GRID_SIZE and 0<=ny<GRID_SIZE): continue
-            if grid[nx][ny]==1 or (nx,ny) in closed: continue
-            neigh=Node(nx,ny,current.g+1,heuristic(Point(nx,ny),goal),current)
-            exists = next((n for n in open_list if (n.x,n.y)==(nx,ny)), None)
-            if exists and exists.f <= neigh.f: continue
-            if exists: open_list.remove(exists)
-            open_list.append(neigh)
-    return []
-
-def gps_to_cell(x,z):
-    half = GRID_SIZE*CELL_SIZE/2.0
-    cx = int((x + half)/CELL_SIZE)
-    cy = int((half - z)/CELL_SIZE)
-    return max(0,min(GRID_SIZE-1,cx)), max(0,min(GRID_SIZE-1,cy))
-
-def normalize(a):
-    while a>math.pi: a-=2*math.pi
-    while a<=-math.pi: a+=2*math.pi
+# --- Función para calcular la diferencia angular más corta ---
+def angle_diff(target, current):
+    a = target - current
+    while a > math.pi:
+        a -= 2 * math.pi
+    while a < -math.pi:
+        a += 2 * math.pi
     return a
 
-def set_vel(l,r):
-    for i in [0,2]: motors[i].setVelocity(l)
-    for i in [1,3]: motors[i].setVelocity(r)
+# --- Función para transformar coordenadas del mundo a coordenadas del display ---
+def world2map(xw, yw):
+    # Calcular las dimensiones del mundo que abarca el display
+    world_map_width = GRID_SIZE * CELL_SIZE
+    world_map_height = GRID_SIZE * CELL_SIZE # Asumiendo un mapa cuadrado
 
-def stop(): set_vel(0,0)
+    # Calcular la posición en el "mundo de celdas" relativa al centro del mapa
+    # Sumamos world_map_width/2 para desplazar el origen (0,0) al centro del área mapeada
+    # Luego dividimos por CELL_SIZE para obtener la posición en unidades de celda
+    px_world_units = (xw + world_map_width / 2) / CELL_SIZE
+    py_world_units = (yw + world_map_height / 2) / CELL_SIZE
 
-def update_display(cell, path_to_draw):
-    display.setColor(0x000000)
-    display.fillRectangle(0,0,display.getWidth(),display.getHeight())
-    for x in range(GRID_SIZE):
-        for y in range(GRID_SIZE):
-            px,py = offset_x+x*cell_px, offset_y+y*cell_px
-            color = 0xFFFFFF
-            if (x,y)==GOAL_CELL: color=0x00FF00
-            elif grid[x][y]==1: color=0xFF0000
-            elif grid[x][y]==2: color=0x505050
-            display.setColor(color)
-            display.fillRectangle(px,py,cell_px,cell_px)
-            display.setColor(0x000000)
-            display.drawRectangle(px,py,cell_px,cell_px)
-    display.setColor(0x0000FF)
-    for p in path_to_draw:
-        display.fillRectangle(offset_x+p.x*cell_px+cell_px//4,
-                              offset_y+p.y*cell_px+cell_px//4,
-                              cell_px//2,cell_px//2)
-    display.setColor(0xFFFF00)
-    display.fillOval(offset_x+cell[0]*cell_px+cell_px//2,
-                     offset_y+cell[1]*cell_px+cell_px//2,
-                     cell_px//3,cell_px//3)
+    # Escalar las unidades de celda a píxeles del display
+    # (DISPLAY_WIDTH / GRID_SIZE) es cuántos píxeles ocupa cada "celda"
+    px = int(px_world_units * (DISPLAY_WIDTH / GRID_SIZE))
+    py = int(py_world_units * (DISPLAY_HEIGHT / GRID_SIZE))
 
-while robot.step(TIME_STEP)!=-1:
-    rx,ry,rz = gps.getValues()
-    yaw = imu.getRollPitchYaw()[2]
-    cx,cy = gps_to_cell(rx,ry)
-    cell = (cx,cy)
+    # Invertir el eje Y para que el Y positivo sea hacia arriba en el display (como en el mundo real)
+    # y el origen (0,0) del display sea la esquina superior izquierda.
+    py = DISPLAY_HEIGHT - 1 - py # Restar 1 para el índice de píxel, ya que DISPLAY_HEIGHT es el tamaño.
 
-    if cell==GOAL_CELL:
-        stop()
-        end_navigation_time = robot.getTime()
-        total_navigation_time = end_navigation_time - start_navigation_time
-        explored_cells = sum(row.count(1) + row.count(2) for row in grid)
-        total_cells = GRID_SIZE * GRID_SIZE
-        explored_percentage = (explored_cells / total_cells) * 100
+    return px, py
 
-        print("\n¡Meta alcanzada!")
-        print(f"Tiempo total de navegación: {total_navigation_time:.2f} segundos")
-        if total_path_length is not None:
-            print(f"[A*] Tiempo de planificación: {path_planning_time:.2f} milisegundos")
-            print(f"[A*] Longitud total del path (celdas): {total_path_length}")
-            print(f"[A*] Distancia total (metros): {total_path_distance:.2f}")
-        print(f"Porcentaje del mapa explorado: {explored_percentage:.2f} %")
-        update_display(cell,path)
-        break
+# --- Inicialización del robot ---
+robot = Robot()
 
-    if grid[cx][cy]==0:
-        grid[cx][cy]=2
-
-    # Solo leer y mapear con el Lidar si el robot está siguiendo el camino
-    if state == STATE_FOLLOW_PATH:
-        lidar_ranges = lidar.getRangeImage()
-        collision_imminent = any(0<d<IMMINENT_COLLISION_DIST for d in lidar_ranges)
-        mapped=False
-        for i,d in enumerate(lidar_ranges):
-            if 0 < d < OBSTACLE_MAPPING_DIST:
-                rel_angle = i*lidar.getFov()/lidar.getHorizontalResolution() - lidar.getFov()/2
-                glob_angle = normalize(yaw+rel_angle)
-                ox,oz = rx+math.cos(glob_angle)*d, ry+math.sin(glob_angle)*d
-                ocx,ocy = gps_to_cell(ox,oz)
-                if 0<=ocx<GRID_SIZE and 0<=ocy<GRID_SIZE and grid[ocx][ocy] == 0:
-                    grid[ocx][ocy]=1
-                    mapped=True
+# Obtener dispositivos
+# Ruedas
+wheels = []
+for i in range(1, 5): # Asume "wheel1", "wheel2", "wheel3", "wheel4"
+    wheel_name = "wheel" + str(i)
+    wheel = robot.getDevice(wheel_name)
+    if wheel:
+        wheel.setPosition(float('inf')) # Modo velocidad
+        wheel.setVelocity(0.0)
+        wheels.append(wheel)
     else:
-        # No consideramos colisiones inminentes ni mapeamos si estamos girando o moviendo después de un giro.
-        collision_imminent = False
-        mapped = False
+        print(f"Advertencia: No se encontró la rueda {wheel_name}")
 
+if not wheels:
+    print("Error: No se encontraron ruedas. Asegúrate de que los nombres coincidan en Webots.")
+    robot.step(0) # Salir si no hay ruedas
+    exit()
 
-    should_replan = mapped or previous_cell != cell or not path
-    if should_replan:
-        start_time = robot.getTime()
-        path = plan_path(grid, Point(cx, cy), Point(*GOAL_CELL))
-        end_time = robot.getTime()
-        path_planning_time = (end_time - start_time) * 1000  # ms
-        elapsed_ms = path_planning_time
-        if path and path[0].x == cx and path[0].y == cy:
-            path.pop(0)
-        if not path and cell != GOAL_CELL:
-            print("No path found to goal! Stopping.")
-            state = STATE_STOP
-            stop()
-        if total_path_length is None:
-            total_path_length = len(path) + 1
-            total_path_distance = total_path_length * CELL_SIZE
-            print(f"[A*] Tiempo de planificación: {elapsed_ms:.2f} ms")
-            print(f"[A*] Longitud total del path (celdas): {total_path_length}")
-            print(f"[A*] Distancia total (metros): {total_path_distance:.2f}")
+# Sensores de distancia (opcional para navegación básica)
+ds = []
+ds_names = ["ds_left", "ds_right"] # Ajusta si tus sensores tienen otros nombres
+for name in ds_names:
+    s = robot.getDevice(name)
+    if s:
+        s.enable(TIME_STEP)
+        ds.append(s)
+    else:
+        print(f"Advertencia: No se encontró el sensor de distancia {name}")
 
-    if collision_imminent and state == STATE_FOLLOW_PATH:
-        state = STATE_TURN
-        turn_target_yaw = normalize(yaw + math.pi/2)
-        stop()
+# Lidar (esencial para el mapeo)
+lidar = robot.getDevice("lidar")
+if lidar:
+    lidar.enable(TIME_STEP)
+    lidar.enablePointCloud() # Necesario para obtener los datos de distancia (ranges)
+else:
+    print("Error: No se encontró el LIDAR. Asegúrate de que el nombre sea 'lidar' en Webots.")
+    robot.step(0)
+    exit()
 
-    if state == STATE_TURN:
-        err = normalize(turn_target_yaw - yaw)
-        if abs(err) < 0.05:
-            state = STATE_MOVE_FORWARD_AFTER_TURN
-            forward_start_pos = Point(rx, ry)
-            stop()
-            integral_error = previous_error = 0.0
+# GPS (esencial para la posición global del robot)
+gps = robot.getDevice("gps")
+if gps:
+    gps.enable(TIME_STEP)
+else:
+    print("Error: No se encontró el GPS. Asegúrate de que el nombre sea 'gps' en Webots.")
+    robot.step(0)
+    exit()
+
+# Inertial Unit (IMU - esencial para la orientación del robot)
+imu = robot.getDevice("inertial unit")
+if imu:
+    imu.enable(TIME_STEP)
+else:
+    print("Error: No se encontró la Unidad Inercial. Asegúrate de que el nombre sea 'inertial unit' en Webots.")
+    robot.step(0)
+    exit()
+
+# Display (esencial para dibujar el mapa)
+display = robot.getDevice("display")
+if display:
+    pass # Ya está habilitado por defecto si existe
+else:
+    print("Error: No se encontró el Display. Asegúrate de que el nombre sea 'display' en Webots.")
+    robot.step(0)
+    exit()
+
+# --- Variables de estado ---
+goal = Point(0.0, 0.0) # Posición de la meta inicial del robot
+# Puedes cambiar la meta para que el robot explore diferentes áreas.
+# Por ejemplo:
+# goal = Point(2.0, 3.0)
+# goal = Point(-1.0, -2.0)
+
+# Almacenar los puntos de obstáculos detectados en el mapa
+# Usamos un conjunto para evitar puntos duplicados y mejorar el rendimiento
+# La clave es un tuple (px, py) de coordenadas del display
+obstacle_map_pixels = set()
+
+# --- Bucle principal de simulación ---
+while robot.step(TIME_STEP) != -1:
+
+    # 1. Lectura de Sensores
+    # Posición del robot (X, Y, Z) - solo usamos X e Y
+    pose = gps.getValues()
+    robot_x = pose[0]
+    robot_y = pose[1]
+
+    # Orientación del robot (Roll, Pitch, Yaw) - solo usamos Yaw
+    imu_rpy = imu.getRollPitchYaw()
+    yaw = imu_rpy[2] # Ángulo de cabeceo (Yaw) en radianes
+
+    # Lecturas del Lidar
+    ranges = lidar.getRangeImage() # Array de distancias a los obstáculos
+    resolution = lidar.getHorizontalResolution() # Número de lecturas horizontales
+    fov = lidar.getFov() # Campo de visión del Lidar
+
+    # Sensores de distancia (para evitar colisiones inmediatas)
+    ds_detect_near = False
+    for s in ds:
+        if s.getValue() < 950.0: # Umbral de detección cercano, ajustar según tu robot
+            ds_detect_near = True
+            break
+
+    # 2. Procesamiento del Lidar y Actualización del Mapa
+    # Itera sobre cada lectura del Lidar para obtener la posición de los obstáculos
+    for i in range(resolution):
+        # Calcular el ángulo de esta lectura del Lidar respecto al frente del robot
+        lidar_angle_relative = -fov / 2 + i * (fov / resolution)
+
+        dist = ranges[i]
+        
+        # Ignorar lecturas infinitas (sin obstáculo en esa dirección) o fuera de un rango útil
+        if math.isinf(dist) or dist > lidar.getMaxRange() or dist < 0.1: # Ajusta dist < 0.1 para evitar puntos demasiado cercanos/ruido
+            continue
+
+        # Calcular la posición absoluta del obstáculo en el mundo
+        # Sumar el yaw del robot al ángulo relativo del LIDAR
+        global_angle = yaw + lidar_angle_relative
+
+        # Coordenadas X, Y del obstáculo en el sistema de coordenadas del mundo
+        obs_x = robot_x + dist * math.cos(global_angle)
+        obs_y = robot_y + dist * math.sin(global_angle)
+
+        # Convertir las coordenadas del mundo a píxeles del display
+        px, py = world2map(obs_x, obs_y)
+
+        # Añadir el píxel del obstáculo al conjunto de puntos del mapa
+        # Asegurarse de que el píxel esté dentro de los límites del display
+        if 0 <= px < DISPLAY_WIDTH and 0 <= py < DISPLAY_HEIGHT:
+            obstacle_map_pixels.add((px, py))
+
+    # 3. Control de Movimiento del Robot (Ejemplo: Ir a la meta, evitar obstáculos)
+    dx = goal.x - robot_x
+    dy = goal.y - robot_y
+    distance_to_goal = math.sqrt(dx**2 + dy**2) # Calcular distancia a la meta
+
+    left_speed = 0.0
+    right_speed = 0.0
+
+    if distance_to_goal < GOAL_REACHED_THRESHOLD:
+        # El robot ha llegado a la meta, detenerlo
+        left_speed = 0.0
+        right_speed = 0.0
+        print(f"Meta alcanzada en ({robot_x:.2f}, {robot_y:.2f})!")
+        # Opcional: Puedes romper el bucle aquí si quieres que la simulación termine
+        # break
+    else:
+        # Si no ha llegado a la meta, continuar con la navegación
+        target_angle = math.atan2(dy, dx) # Ángulo hacia la meta
+        diff = angle_diff(target_angle, yaw) # Diferencia angular entre la orientación actual y la meta
+
+        Kp_angular = 5.0 # Ganancia proporcional para el control angular
+        turn_speed = Kp_angular * diff
+        max_turn_speed = SPEED # Limitar la velocidad de giro
+        turn_speed = max(-max_turn_speed, min(max_turn_speed, turn_speed))
+
+        if ds_detect_near:
+            left_speed = SPEED / 2
+            right_speed = -SPEED / 2
+        elif abs(diff) > ANGLE_THRESHOLD:
+            left_speed = -turn_speed
+            right_speed = turn_speed
         else:
-            v = SPEED * 0.6
-            set_vel(-v if err > 0 else v, v if err > 0 else -v)
+            left_speed = SPEED
+            right_speed = SPEED
 
-    elif state == STATE_MOVE_FORWARD_AFTER_TURN:
-        if math.hypot(rx - forward_start_pos.x, ry - forward_start_pos.y) < CELL_SIZE * 0.7:
-            set_vel(SPEED * 0.7, SPEED * 0.7)
-        else:
-            state = STATE_FOLLOW_PATH # El Lidar se "enciende" de nuevo aquí
-            stop()
+    # Aplicar velocidades a las ruedas
+    # Asume que las ruedas 1 y 3 son las izquierdas, 2 y 4 son las derechas (o ajusta según tu robot)
+    if len(wheels) == 4: # Para un robot de 4 ruedas
+        wheels[0].setVelocity(left_speed)  # wheel1 (frontal izquierda)
+        wheels[1].setVelocity(right_speed) # wheel2 (frontal derecha)
+        wheels[2].setVelocity(left_speed)  # wheel3 (trasera izquierda)
+        wheels[3].setVelocity(right_speed) # wheel4 (trasera derecha)
+    elif len(wheels) == 2: # Para un robot de 2 ruedas (diferencial)
+        wheels[0].setVelocity(left_speed)
+        wheels[1].setVelocity(right_speed)
+    else:
+        # Si tienes un número diferente de ruedas, ajusta aquí
+        print("Configuración de ruedas no estándar, ajusta el código.")
+        for wheel in wheels:
+            wheel.setVelocity(0.0) # Detener el robot por seguridad
 
-    elif state == STATE_FOLLOW_PATH:
-        if not path:
-            stop()
-            state = STATE_STOP
-        else:
-            # Detectar si estamos en el borde y si pasó suficiente tiempo desde inicio
-            if (cx == 0 or cx == GRID_SIZE-1 or cy == 0 or cy == GRID_SIZE-1) and (robot.getTime() - start_navigation_time) > BORDER_CHECK_DELAY:
-                # Calcular ángulo directo hacia la meta
-                goal_x = GOAL_CELL[0]*CELL_SIZE + CELL_SIZE/2 - (GRID_SIZE*CELL_SIZE)/2
-                goal_z = (GRID_SIZE*CELL_SIZE)/2 - (GOAL_CELL[1]*CELL_SIZE + CELL_SIZE/2)
-                dx = goal_x - rx
-                dz = goal_z - ry
-                desired_yaw = math.atan2(dz, dx)
-                err = normalize(desired_yaw - yaw)
-                if abs(err) > 0.05:
-                    # Girar hacia la meta
-                    v = SPEED * 0.6
-                    set_vel(-v if err > 0 else v, v if err > 0 else -v)
-                else:
-                    # Cuando ya está orientado, avanzar adelante suavemente
-                    set_vel(SPEED * 0.7, SPEED * 0.7)
-                # Actualizar display y continuar al siguiente ciclo
-                update_display(cell, path)
-                previous_cell = cell
-                continue
+    # 4. Dibujar el Mapa en el Display
+    # Limpiar el display
+    display.setColor(COLOR_BACKGROUND)
+    display.fillRectangle(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT)
 
-            # Navegación normal por waypoints
-            wp = path[0]
-            tx = wp.x*CELL_SIZE + CELL_SIZE/2 - (GRID_SIZE*CELL_SIZE)/2
-            tz = (GRID_SIZE*CELL_SIZE)/2 - (wp.y*CELL_SIZE + CELL_SIZE/2)
-            dx,dz = tx-rx, tz-ry
-            dist_to_wp = math.hypot(dx,dz)
-            desired_yaw = math.atan2(dz,dx)
-            err = normalize(desired_yaw - yaw)
-            integral_error += err*(TIME_STEP/1000.0)
-            derivative = (err - previous_error)/(TIME_STEP/1000.0)
-            turn_correction = KP*err + KI*integral_error + KD*derivative
-            previous_error = err
-            vl = max(0, min(SPEED, SPEED - turn_correction))
-            vr = max(0, min(SPEED, SPEED + turn_correction))
-            set_vel(vl,vr)
-            if dist_to_wp < CELL_SIZE * 0.4:
-                path.pop(0)
+    # Dibujar obstáculos (píxeles rojos)
+    display.setColor(COLOR_OBSTACLE)
+    for (px, py) in obstacle_map_pixels:
+        # Dibujar un pequeño cuadrado para hacer los obstáculos más visibles
+        display.fillRectangle(px, py, 2, 2) # Dibuja un cuadrado de 2x2 píxeles
 
-    elif state == STATE_STOP:
-        stop()
+    # Dibujar la meta (píxel verde)
+    goal_px, goal_py = world2map(goal.x, goal.y)
+    if 0 <= goal_px < DISPLAY_WIDTH and 0 <= goal_py < DISPLAY_HEIGHT:
+        display.setColor(COLOR_GOAL)
+        display.fillRectangle(goal_px, goal_py, 4, 4) # Dibuja un cuadrado de 4x4 píxeles
 
-    update_display(cell, path)
-    previous_cell = cell
+    # Dibujar el robot (píxel azul)
+    robot_px, robot_py = world2map(robot_x, robot_y)
+    if 0 <= robot_px < DISPLAY_WIDTH and 0 <= robot_py < DISPLAY_HEIGHT:
+        display.setColor(COLOR_ROBOT)
+        display.fillRectangle(robot_px, robot_py, 4, 4) # Dibuja un cuadrado de 4x4 píxeles
+
+    # Opcional: Dibujar el rastro del robot (píxeles negros)
+    # Esto puede sobrecargar el display con el tiempo, úsalo con precaución o vacía el mapa cada cierto tiempo
+    # display.setColor(COLOR_TRAIL)
+    # display.fillRectangle(robot_px, robot_py, 1, 1)
