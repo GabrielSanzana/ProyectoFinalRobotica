@@ -4,254 +4,301 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/project
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/floors/protos/RectangleArena.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/factory/containers/protos/WoodenBox.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/obstacles/protos/OilBarrel.proto"
 
 WorldInfo {
 }
 Viewpoint {
-  orientation 0.3630762930919126 0.04743643880809859 -0.9305511214693373 2.4567224313119747
-  position 3.6980050589231976 4.309247165473475 4.016907946409301
+  orientation -0.6793294424863694 0.04759976243857723 0.732288038402205 3.039065729688855
+  position 0.2918911125737143 -0.7584312897114386 7.37354209724537
 }
 TexturedBackground {
 }
 TexturedBackgroundLight {
 }
 RectangleArena {
-  floorSize 5 5
+  translation 1.59215e-07 0 0.03
+  rotation 0 1 0 5.30716e-06
+  floorSize 4 4
+  wallThickness 0.07
+  wallHeight 0.6
 }
 Robot {
-  translation -2.25 -0.25 0.0397031
+  translation 1.72889 -1.85968 0.066664
+  rotation -0.0022896510013635687 -0.0019704808617766406 -0.9999954373413238 -1.5844953071795862
   children [
-    HingeJoint {
-      jointParameters HingeJointParameters {
-        position 408.27761373779555
-        axis 0 1 0
-        anchor 0.05 0.06 0
-      }
-      device [
-        RotationalMotor {
-          name "motor1"
-        }
-      ]
-      endPoint Solid {
-        translation 0.0500098122347557 0.06000067095540662 -5.455707588046219e-06
-        rotation -0.9958264627324172 0.06453866512172883 -0.06453229289392248 4.708198682207355
-        children [
-          DEF Rueda Shape {
-            appearance PBRAppearance {
-              baseColor 0 1 0
-              metalness 0
-            }
-            geometry Cylinder {
-              height 0.02
-              radius 0.04
-            }
+    InertialUnit {
+    }
+    Display {
+      width 256
+      height 256
+    }
+    DEF gps GPS {
+      translation -0.01 0.001 0.03
+      children [
+        Shape {
+          appearance PBRAppearance {
           }
-        ]
-        name "rueda1"
-        boundingObject USE Rueda
-        physics Physics {
-        }
-      }
-    }
-    HingeJoint {
-      jointParameters HingeJointParameters {
-        position 338.11206356512434
-        axis 0 1 0
-        anchor 0.05 -0.06 0
-      }
-      device [
-        RotationalMotor {
-          name "motor2"
+          geometry Cylinder {
+            height 0.02
+            radius 0.02
+          }
         }
       ]
-      endPoint Solid {
-        translation 0.05001249536424314 -0.059999283239963785 -6.20404510819023e-06
-        rotation -0.726146445193021 0.4861667319829026 -0.4861617517314618 4.397706249886574
-        children [
-          USE Rueda
-        ]
-        name "rueda2"
-        boundingObject USE Rueda
-        physics Physics {
+      boundingObject Shape {
+        appearance PBRAppearance {
+        }
+        geometry Cylinder {
+          height 0.02
+          radius 0.02
         }
       }
-    }
-    HingeJoint {
-      jointParameters HingeJointParameters {
-        position 357.08215280193633
-        axis 0 1 0
-        anchor -0.05 -0.06 0
+      physics Physics {
       }
-      device [
-        RotationalMotor {
-          name "motor3"
+    }
+    DEF lidar Lidar {
+      translation 0.07 -0.02 0.04
+      children [
+        Shape {
+          appearance PBRAppearance {
+          }
+          geometry Cylinder {
+            height 0.025
+            radius 0.025
+          }
         }
       ]
-      endPoint Solid {
-        translation -0.049990719032170484 -0.0600006734943581 -6.436809490838355e-06
-        rotation 0.7702191414073273 -0.45098080411201696 0.45097537464060977 1.8289643586007773
-        children [
-          USE Rueda
-        ]
-        name "rueda3"
-        boundingObject USE Rueda
-        physics Physics {
+      boundingObject Shape {
+        appearance PBRAppearance {
+        }
+        geometry Cylinder {
+          height 0.025
+          radius 0.025
         }
       }
+      physics Physics {
+      }
+      horizontalResolution 124
+      fieldOfView 3.14
+      verticalFieldOfView 0.1
+      numberOfLayers 1
     }
-    HingeJoint {
-      jointParameters HingeJointParameters {
-        position 389.30754818121534
-        axis 0 1 0
-        anchor -0.05 0.06 0
-      }
-      device [
-        RotationalMotor {
-          name "motor4"
-        }
-      ]
-      endPoint Solid {
-        translation -0.0499871130854888 0.059999282978267565 -5.430028488803834e-06
-        rotation 0.984582488143259 -0.12369070389517509 0.12368481641472885 1.586341627892727
-        children [
-          USE Rueda
-        ]
-        name "rueda4"
-        boundingObject USE Rueda
-        physics Physics {
-        }
-      }
-    }
-    DEF Cuerpo Shape {
+    DEF BODY Shape {
       appearance PBRAppearance {
-        baseColor 1 0 0
+        baseColor 0.917647 0.145098 0.145098
+        roughness 1
         metalness 0
       }
       geometry Box {
         size 0.2 0.1 0.05
       }
     }
-    InertialUnit {
-      translation 0.1 0 0.05
-      children [
-        DEF IMU Shape {
-          appearance PBRAppearance {
-            metalness 0
-          }
-          geometry Cone {
-            bottomRadius 0.02
-            height 0.03
-          }
+    DEF WHEEL1 HingeJoint {
+      jointParameters HingeJointParameters {
+        position 7721.687121211501
+        axis 0 1 0
+        anchor 0.05 0.06 0
+      }
+      device [
+        RotationalMotor {
+          name "wheel1"
         }
       ]
-      name "imu"
-      boundingObject Shape {
-        appearance PBRAppearance {
-        }
-        geometry Box {
-          size 0.05 0.05 0.05
+      endPoint Solid {
+        translation 0.04936762430495007 0.06043224674532349 -0.0006515025743154448
+        rotation -0.9711108081706548 0.17067542351549053 -0.16677439270447325 4.661997981242564
+        children [
+          DEF WHEEL Shape {
+            appearance PBRAppearance {
+              baseColor 0.305882 0.898039 0.25098
+              roughness 1
+              metalness 0
+            }
+            geometry Cylinder {
+              height 0.02
+              radius 0.04
+              subdivision 24
+            }
+          }
+        ]
+        boundingObject USE WHEEL
+        physics Physics {
         }
       }
-      physics Physics {
+    }
+    DEF WHEEL2 HingeJoint {
+      jointParameters HingeJointParameters {
+        position 5534.332435219305
+        axis 0 1 0
+        anchor 0.05 -0.06 0
       }
-    }
-    Lidar {
-      translation 0 0 0.08
-      children [
-        DEF Lidar Shape {
-          appearance PBRAppearance {
-            baseColor 0.3 0.5 0.5
-            metalness 0
-          }
-          geometry Box {
-            size 0.01 0.01 0.01
-          }
-        }
-      ]
-      boundingObject USE Lidar
-      physics Physics {
-      }
-      horizontalResolution 128
-      fieldOfView 0.25
-      verticalFieldOfView 0.1
-      numberOfLayers 1
-    }
-    Display {
-    }
-    GPS {
-      translation 0 0 0.05
-      children [
-        DEF GPS Shape {
-          appearance PBRAppearance {
-            baseColor 0.6 0.5 0.3
-          }
-          geometry Cylinder {
-            height 0.05
-            radius 0.02
-          }
+      device [
+        RotationalMotor {
+          name "wheel2"
         }
       ]
-      boundingObject USE GPS
-      physics Physics {
+      endPoint Solid {
+        translation 0.04999783902960432 -0.06000008469764562 -5.113544895196054e-07
+        rotation 0.7358159803655053 -0.4788387649983222 0.4788405581961826 1.8728734597724408
+        children [
+          USE WHEEL
+        ]
+        name "solid(1)"
+        boundingObject USE WHEEL
+        physics Physics {
+        }
       }
     }
-    DistanceSensor {
-      translation 0.1 0.02 0
-      rotation 0 0 1 0.3
-      children [
-        DEF sensorDistancia Shape {
-          appearance PBRAppearance {
-            baseColor 0 0 1
-            metalness 0
-          }
-          geometry Box {
-            size 0.01 0.01 0.01
-          }
+    DEF WHEEL3 HingeJoint {
+      jointParameters HingeJointParameters {
+        position 7721.686929581396
+        axis 0 1 0
+        anchor -0.05 0.06 0
+      }
+      device [
+        RotationalMotor {
+          name "wheel3"
         }
       ]
-      name "distIzq"
-      boundingObject USE sensorDistancia
-      physics Physics {
+      endPoint Solid {
+        translation -0.05000464162297225 0.060000084994313085 1.2118651635632982e-07
+        rotation 0.9704953749300431 -0.17049706499317124 0.17049773625508696 1.6007441803810938
+        children [
+          USE WHEEL
+        ]
+        name "solid(2)"
+        boundingObject USE WHEEL
+        physics Physics {
+        }
       }
     }
-    DistanceSensor {
-      translation 0.1 -0.02 0
+    DEF WHEEL4 HingeJoint {
+      jointParameters HingeJointParameters {
+        position 5534.331809974809
+        axis 0 1 0
+        anchor -0.05 -0.06 0
+      }
+      device [
+        RotationalMotor {
+          name "wheel4"
+        }
+      ]
+      endPoint Solid {
+        translation -0.0500019640318494 -0.05999991499841628 -7.50602202580701e-07
+        rotation 0.7355852195355363 -0.4790160050613122 0.4790177989344007 1.8731729124203589
+        children [
+          USE WHEEL
+        ]
+        name "solid(3)"
+        boundingObject USE WHEEL
+        physics Physics {
+        }
+      }
+    }
+    DEF DS_RIGHT DistanceSensor {
+      translation 0.1 -0.03 0
       rotation 0 0 1 -0.3
       children [
-        USE sensorDistancia
+        Shape {
+          appearance PBRAppearance {
+            baseColor 0.184314 0.596078 0.847059
+            roughness 1
+            metalness 0
+          }
+          geometry Box {
+            size 0.01 0.01 0.01
+          }
+        }
       ]
-      name "distDer"
-      boundingObject USE sensorDistancia
-      physics Physics {
-      }
+      name "ds_right"
+    }
+    DEF DS_LEFT DistanceSensor {
+      translation 0.1 0.03 0
+      rotation 0 0 1 0.3
+      children [
+        Shape {
+          appearance PBRAppearance {
+            baseColor 0.184314 0.596078 0.847059
+            roughness 1
+            metalness 0
+          }
+          geometry Box {
+            size 0.01 0.01 0.01
+          }
+        }
+      ]
+      name "ds_left"
     }
   ]
-  boundingObject USE Cuerpo
+  boundingObject USE BODY
   physics Physics {
+    density -1
+    mass 1
   }
   controller "my_controller"
   window "<none>"
 }
 WoodenBox {
-  translation -0.23 -0.24 0.14
-  size 0.25 0.25 0.25
+  translation -1.81 -1.56 0.3
+  size 0.3 0.8 0.6
 }
 WoodenBox {
-  translation -2.27 2.24 0.3
-  name "wooden box(1)"
-  size 0.5 0.5 0.5
+  translation -1.81 1.56 0.3
+  name "wooden box(8)"
+  size 0.3 0.8 0.6
 }
-Solid {
-  translation -0.77 -0.15 0
+WoodenBox {
+  translation -0.64 -0.73 0.3
+  name "wooden box(2)"
+  size 0.3 0.8 0.6
+}
+WoodenBox {
+  translation -0.64 0.08 0.3
+  name "wooden box(4)"
+  size 0.3 0.8 0.6
+}
+WoodenBox {
+  translation 0.69 0.13 0.3
+  name "wooden box(7)"
+  size 0.3 0.8 0.6
+}
+WoodenBox {
+  translation -0.64 0.88 0.3
+  name "wooden box(5)"
+  size 0.3 0.8 0.6
+}
+WoodenBox {
+  translation 0.02 -0.96 0.3
   rotation 0 0 1 -1.5707953071795862
-  children [
-    Shape {
-      appearance PBRAppearance {
-      }
-      geometry Box {
-        size 0.9 0.05 0.6
-      }
-    }
-  ]
-  name "solid(1)"
+  name "wooden box(1)"
+  size 0.3 1 0.6
+}
+WoodenBox {
+  translation 1.24 -0.96 0.3
+  rotation 0 0 1 -1.5707953071795862
+  name "wooden box(3)"
+  size 0.3 1.4 0.6
+}
+WoodenBox {
+  translation 1.24 1.13 0.3
+  rotation 0 0 1 -1.5707953071795862
+  name "wooden box(6)"
+  size 0.3 1.4 0.6
+}
+OilBarrel {
+  translation -1.45 1.79 0.44
+  height 0.72
+  radius 0.2
+}
+OilBarrel {
+  translation -1.63 -0.02 0.44
+  name "oil barrel(2)"
+  height 0.72
+  radius 0.2
+}
+OilBarrel {
+  translation 0.07 0.79 0.44
+  name "oil barrel(1)"
+  height 0.72
+  radius 0.2
 }
