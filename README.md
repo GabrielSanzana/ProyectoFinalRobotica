@@ -76,11 +76,11 @@ Aquí se presentan los diagramas que representan el sistema del robot y su inter
 
 A continuación, se presentan los resultados de una ejecución de prueba, demostrando el desempeño del sistema en un escenario específico.
 
-Tiempo total de ejecución: 87.81 segundos
-Distancia total recorrida: 20.06 metros
-Distancia en línea recta (inicio a fin): 2.55 metros
-Eficiencia de la ruta (Recorrido / Línea Recta): 7.88
-Número de replanificaciones (llamadas a RRT): 7
+- Tiempo total de ejecución: 87.81 segundos
+- Distancia total recorrida: 20.06 metros
+- Distancia en línea recta (inicio a fin): 2.55 metros
+- Eficiencia de la ruta (Recorrido / Línea Recta): 7.88
+- Número de replanificaciones (llamadas a RRT): 7
 
 ### Análisis de Algoritmos
 
