@@ -20,7 +20,7 @@ El robot es capaz de:
 * Planificar rutas factibles desde un punto de inicio a una meta utilizando el algoritmo de planificación **RRT (Rapidly-exploring Random Trees)**.
 * Navegar de manera autónoma hacia el objetivo, replanificando la ruta dinámicamente si el camino actual se encuentra bloqueado.
 
-El desarrollo integra percepción, planificación y control en un entorno dinámico. El robot se prueba en un entorno controlado de **5m x 5m** con obstáculos estáticos, evaluando su desempeño en términos de eficiencia de navegación, tiempo de ejecución y robustez en la evasión de obstáculos.
+El desarrollo integra percepción, planificación y control en un entorno dinámico. El robot se prueba en un entorno controlado de **8x8** con obstáculos estáticos, evaluando su desempeño en términos de eficiencia de navegación, tiempo de ejecución y robustez en la evasión de obstáculos.
 
 ## Arquitectura del Software
 
