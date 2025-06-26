@@ -89,10 +89,17 @@ A continuación, se presentan los resultados de una ejecución de prueba, demost
 
 ### Reflexión sobre Mejoras
 
-* Implementar un control proporcional (P, PI o PID) más sofisticado para el seguimiento de la ruta, lo que permitiría trayectorias más suaves y precisas.
-* Optimizar la ruta generada por RRT utilizando algoritmos de suavizado de caminos para reducir la distancia total recorrida y mejorar la eficiencia.
-* Considerar el uso de algoritmos de SLAM (Simultaneous Localization and Mapping) para entornos completamente desconocidos, permitiendo al robot construir mapas más detallados y navegar en áreas más grandes.
-* Explorar variantes de RRT, como RRT*, que convergen hacia una ruta óptima a medida que se añaden más muestras, balanceando la velocidad de RRT con la calidad de ruta de otros algoritmos.
+1. Control proporcional más sofisticado (P, PI o PID):
+El controlador actual es proporcional (P) y solo minimiza el error angular hacia el waypoint. Implementar un control PI o PID permitiría no solo corregir el error instantáneo, sino también considerar el histórico y la tendencia, logrando movimientos más suaves y precisos, sobre todo en curvas o ante pequeñas oscilaciones. Esto es especialmente relevante cuando el entorno es complejo y se requiere mayor precisión para evitar obstáculos.
+
+2. Optimización y suavizado de la ruta (post-procesamiento de RRT):
+El algoritmo RRT que utilizas encuentra rutas factibles pero, por su naturaleza, tiende a generar trayectorias con muchos quiebres y no necesariamente cortas. Actualmente, la eficiencia de ruta reportada es baja (relación Recorrido/Línea recta ≈7.88). Al aplicar técnicas de suavizado de caminos (como Bezier, splines, o atajos entre nodos libres) puedes reducir la distancia total y mejorar la eficiencia energética y temporal del robot, logrando trayectorias más naturales y seguras.
+
+3. Uso de SLAM para entornos desconocidos:
+El sistema construye un mapa de ocupación local a partir del LIDAR, pero no implementa algoritmos completos de SLAM. Si el robot debe operar en entornos completamente desconocidos o más grandes, un sistema SLAM permitiría construir y actualizar un mapa global mientras se navega, facilitando la exploración y la robustez ante cambios inesperados en el entorno.
+
+4. Exploración de variantes como RRT*:
+El RRT básico que usas es rápido para encontrar rutas, pero no garantiza óptimos. RRT* agrega la optimización incremental, convergiendo hacia rutas más cortas a medida que se agregan muestras. Si bien sacrifica algo de velocidad inicial, a mediano plazo logra rutas mucho mejores, lo que es clave si buscas balancear rapidez en la planificación con calidad de trayectorias.
 
 
 
