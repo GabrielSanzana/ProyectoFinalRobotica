@@ -56,6 +56,15 @@ def world2map(xw, yw):
 def distance(a, b):
     return np.linalg.norm(np.array(a) - np.array(b))
 
+# --- Nueva función para calcular la longitud de la ruta ---
+def calculate_path_length(path):
+    length = 0.0
+    if path is None or len(path) < 2:
+        return 0.0
+    for i in range(len(path) - 1):
+        length += distance(path[i], path[i+1])
+    return length
+
 def is_free_point(point):
     try:
         px, py = world2map(point[0], point[1])
@@ -130,7 +139,7 @@ def rrt(start, goal, obstacle_check_func, sample_func, steer_func, max_nodes=RRT
             parents[tuple(x_new)] = x_nearest
 
             if distance(x_new, goal) < threshold:
-                print("¡Meta alcanzada!")
+                print("¡Meta alcanzada en RRT!")
                 return build_path(parents, x_new, goal)
     print("No se encontró camino.")
     return None
@@ -255,6 +264,13 @@ while any(math.isnan(v) or math.isinf(v) for v in pose):
 start_point = [pose[0], pose[1]]
 goal_point = [goal.x, goal.y]
 
+# --- Inicialización de Métricas de Desempeño ---
+start_time = robot.getTime()
+total_distance_traveled = 0.0
+replanning_count = 0
+metrics_printed = False # Flag para asegurar que las métricas se impriman solo una vez
+
+
 print("Planificando ruta inicial RRT...")
 planned_path = rrt(start_point, goal_point, obstacle_check, sample, steer)
 path_index = 0
@@ -319,6 +335,10 @@ while robot.step(TIME_STEP) != -1:
         prev_robot_x, prev_robot_y = robot_x, robot_y
 
     moved_distance = math.sqrt((robot_x - prev_robot_x) ** 2 + (robot_y - prev_robot_y) ** 2)
+    
+    # --- Acumulación de métrica de distancia ---
+    total_distance_traveled += moved_distance
+
 
     if not rotating_to_path and moved_distance > MOVEMENT_THRESHOLD:
         for i in range(resolution):
@@ -356,6 +376,8 @@ while robot.step(TIME_STEP) != -1:
         # Verificar si la ruta está bloqueada
         if ruta_bloqueada(planned_path):
             print("Ruta bloqueada, replanificando...")
+            # --- Conteo de métrica de replanificación ---
+            replanning_count += 1
             start = [robot_x, robot_y]
             planned_path = rrt(start, goal_point, obstacle_check, sample, steer)
             path_index = 0
@@ -375,8 +397,29 @@ while robot.step(TIME_STEP) != -1:
                 if dist_to_target < 0.1:
                     path_index += 1
                     if path_index >= len(planned_path):
-                        print("¡Llegó a la meta!")
-                        reached_goal = True
+                        # --- CÓDIGO PARA MOSTRAR MÉTRICAS AL LLEGAR A LA META ---
+                        if not metrics_printed:
+                            print("¡Llegó a la meta!")
+                            reached_goal = True
+                            
+                            # --- CÁLCULO Y MUESTRA DE MÉTRICAS DE DESEMPEÑO ---
+                            end_time = robot.getTime()
+                            total_time = end_time - start_time
+                            straight_line_distance = distance(start_point, goal_point)
+                            path_efficiency = (total_distance_traveled / straight_line_distance) if straight_line_distance > 0 else float('inf')
+
+                            print("\n" + "="*30)
+                            print("   MÉTRICAS DE DESEMPEÑO")
+                            print("="*30)
+                            print(f"Tiempo total de ejecución: {total_time:.2f} segundos")
+                            print(f"Distancia total recorrida: {total_distance_traveled:.2f} metros")
+                            print(f"Distancia en línea recta (inicio a fin): {straight_line_distance:.2f} metros")
+                            print(f"Eficiencia de la ruta (Recorrido / Línea Recta): {path_efficiency:.2f}")
+                            print(f"Número de replanificaciones (llamadas a RRT): {replanning_count}")
+                            print("="*30 + "\n")
+
+                            metrics_printed = True # Marcar como impresas
+
                         for w in wheels:
                             w.setVelocity(0.0)
                         lidar.disable()
@@ -425,6 +468,8 @@ while robot.step(TIME_STEP) != -1:
             right_speed = angular_speed
         elif ds_detect_near:
             print("Obstáculo cerca, planeando ruta...")
+            # --- Conteo de métrica de replanificación ---
+            replanning_count += 1
             start = [robot_x, robot_y]
             planned_path = rrt(start, goal_point, obstacle_check, sample, steer)
             path_index = 0

@@ -8,59 +8,55 @@
 * Lucas Zamora
 
 **Software de Simulación:**
-* Webots R2025a
+* Webots R2023a
 
 ## Descripción del Proyecto
 
-El presente proyecto tiene como objetivo el desarrollo e implementación de un robot móvil autónomo de 4 ruedas en el simulador Webots, utilizando control cinemático diferencial y una variedad de sensores para la percepción del entorno.
+El presente proyecto tiene como objetivo el desarrollo e implementación de un robot móvil autónomo de 4 ruedas en el simulador Webots. El sistema integra control cinemático diferencial y una variedad de sensores para la percepción y navegación en un entorno con obstáculos.
 
 El robot es capaz de:
-* Detectar y evitar obstáculos en tiempo real mediante la combinación de un sensor LIDAR 2D y sensores de distancia (ultrasónicos o infrarrojos).
-* Construir un mapa local del entorno (grilla de ocupación 8x8) a partir de los datos del LIDAR.
-* Planificar rutas óptimas en el mapa utilizando el algoritmo de planificación A* (A-Star).
-* Navegar de manera autónoma hacia un objetivo definido en el entorno simulado, ajustando su trayectoria en función de la percepción actualizada.
+* Detectar obstáculos en tiempo real mediante la combinación de un sensor LIDAR y sensores de distancia.
+* Construir un mapa de ocupación local del entorno a partir de los datos del LIDAR.
+* Planificar rutas factibles desde un punto de inicio a una meta utilizando el algoritmo de planificación **RRT (Rapidly-exploring Random Trees)**.
+* Navegar de manera autónoma hacia el objetivo, replanificando la ruta dinámicamente si el camino actual se encuentra bloqueado.
 
-El desarrollo integra percepción, planificación y control en un entorno dinámico, permitiendo que el robot reaccione ante cambios en su entorno y tome decisiones en tiempo real. El robot se prueba en un entorno controlado de **5m x 5m** (según `RectangleArena { floorSize 5 5 }` en `mundo_virtual.wbt`) con obstáculos distribuidos (como la `WoodenBox`), evaluando su desempeño en términos de eficiencia de navegación, precisión de planificación y robustez en la evasión de obstáculos.
+El desarrollo integra percepción, planificación y control en un entorno dinámico. El robot se prueba en un entorno controlado de **5m x 5m** con obstáculos estáticos, evaluando su desempeño en términos de eficiencia de navegación, tiempo de ejecución y robustez en la evasión de obstáculos.
 
 ## Arquitectura del Software
 
 El sistema de control del robot se organiza en tres niveles principales:
 
-###  Percepción
+### Percepción
 
-* **LIDAR 2D (1 capa, 128 resoluciones, `maxRange 0.8`):**
-    * Obtiene un mapa parcial del entorno en cada ciclo.
-    * Detecta obstáculos en un rango de hasta **0.8 metros** (según la configuración del LIDAR en `mundo_virtual.wbt`).
-    * Construye un mapa de ocupación (grilla 8x8).
-* **Sensores de distancia (`DistanceSensor` - "distIzq" y "distDer"):**
-    * Detectan obstáculos cercanos (frontales y laterales inmediatos, dada su `translation` y `rotation` en `mundo_virtual.wbt`).
-    * Proveen una capa de seguridad adicional para la evasión reactiva.
-* **GPS:**
-    * Obtiene la posición actual del robot en el entorno simulado (coordenadas X, Z).
+* **LIDAR 2D:**
+    * Obtiene un escaneo del entorno para mapear los obstáculos.
+    * Los datos se utilizan para actualizar un mapa de ocupación que informa al algoritmo de planificación.
+* **Sensores de Distancia:**
+    * Detectan obstáculos inminentes que podrían no haber sido capturados por el LIDAR en el ciclo anterior.
+    * Actúan como una capa de seguridad para la evasión reactiva inmediata.
+* **GPS e IMU (Inertial Unit):**
+    * Obtienen la posición (coordenadas X, Y) y la orientación (yaw) del robot en el mundo, datos cruciales para la localización y el seguimiento de la ruta.
 
-###  Planificación
+### Planificación
 
-* **Grilla de ocupación:**
-    * Mapa 2D representado como una matriz `grid[8][8]`.
-    * Celdas marcadas como libres u ocupadas.
-* **Algoritmo de planificación A\* (A-Star):**
-    * Calcula la ruta óptima desde la posición actual hacia el objetivo.
-    * Se ejecuta en cada ciclo para ajustar el plan en función de los cambios en el mapa.
+* **Mapa de Ocupación:**
+    * Un mapa 2D del mundo conocido por el robot, donde las celdas se marcan como libres u ocupadas por obstáculos.
+* **Algoritmo de Planificación RRT (Rapidly-exploring Random Trees):**
+    * Encuentra un camino factible (no necesariamente el más corto) desde la posición actual hasta el objetivo, explorando aleatoriamente el espacio libre de obstáculos.
+    * Se ejecuta una vez para encontrar una ruta inicial y se vuelve a invocar (replanificación) solo si la ruta actual se encuentra bloqueada por un nuevo obstáculo detectado.
 
-###  Control
+### Control
 
-* **Control de navegación:**
-    * Si se detecta un obstáculo cercano → evasión reactiva (giro en el lugar o ajuste de velocidad de las ruedas).
-    * Si no hay obstáculos cercanos → seguimiento del camino planificado (A\*).
-* **Controlador de motores (`RotationalMotor` - "motor1", "motor2", "motor3", "motor4"):**
-    * Control cinemático diferencial (velocidad de ruedas izquierda/derecha).
-    * Ajustes simples de velocidad en función del ángulo hacia el waypoint actual.
+* **Control de Navegación:**
+    * Sigue la secuencia de puntos (waypoints) generada por el algoritmo RRT.
+    * Un controlador proporcional ajusta la velocidad de las ruedas para minimizar el error de ángulo hacia el siguiente punto del camino.
+    * Si la ruta se bloquea, detiene el seguimiento y solicita una replanificación al módulo de planificación.
 
-Esta arquitectura modular permite la integración de múltiples fuentes de percepción para una navegación robusta, combinando planificación deliberativa (A\*) con comportamientos reactivos (evasión rápida).
+Esta arquitectura modular permite una navegación robusta, combinando la planificación basada en muestreo (RRT) con la percepción continua del entorno.
 
 ## Diagramas del Sistema
 
-Aquí se presentarán los diagramas que representan el sistema del robot y su interacción con el entorno.
+Aquí se presentan los diagramas que representan el sistema del robot y su interacción con el entorno.
 
 ### Diagrama de Alto Nivel
 
@@ -78,26 +74,26 @@ Aquí se presentarán los diagramas que representan el sistema del robot y su in
 
 ### Métricas de Desempeño
 
-* **Tiempo total de navegación:** ___ segundos
-* **Longitud del path (celdas):** ___
-* **Tiempo de planificación (A\*):** ___ milisegundos
-* **Porcentaje del mapa explorado:** ___ %
+A continuación, se presentan los resultados de una ejecución de prueba, demostrando el desempeño del sistema en un escenario específico.
+
+Tiempo total de ejecución: 87.81 segundos
+Distancia total recorrida: 20.06 metros
+Distancia en línea recta (inicio a fin): 2.55 metros
+Eficiencia de la ruta (Recorrido / Línea Recta): 7.88
+Número de replanificaciones (llamadas a RRT): 7
 
 ### Análisis de Algoritmos
 
-* **Precisión:** El algoritmo A\* logra rutas óptimas en escenarios conocidos, demostrando la capacidad del robot para encontrar caminos eficientes hacia el objetivo.
-* **Eficiencia:** La planificación en grilla 8x8 es rápida (< 50 ms por iteración), lo que permite una toma de decisiones casi en tiempo real.
-* **Robustez:** La combinación de un LIDAR 2D y sensores de distancia frontales y laterales inmediatos permite al robot reaccionar eficazmente ante la presencia de obstáculos estáticos y dinámicos, garantizando una navegación segura.
+* **Factibilidad y Eficiencia:** El algoritmo RRT demuestra ser muy eficiente para encontrar rápidamente una solución en espacios complejos. No garantiza la ruta más corta (como se observa en la métrica de eficiencia de 7.88), pero su velocidad es clave para la replanificación en tiempo real.
+* **Robustez:** La capacidad de invocar RRT nuevamente cuando la ruta se bloquea (`Número de replanificaciones: 7`) dota al robot de una gran robustez. Puede adaptarse a obstáculos no mapeados inicialmente y encontrar rutas alternativas para cumplir su objetivo. La combinación del LIDAR para el mapeo y los sensores de distancia para la seguridad inmediata permite al robot reaccionar eficazmente ante el entorno.
 
 ### Reflexión sobre Mejoras
 
-* Implementar un control proporcional (P, PI o PID) más sofisticado para el seguimiento del waypoint, lo que permitiría trayectorias más suaves y precisas.
-* Considerar el uso de algoritmos de SLAM (Simultaneous Localization and Mapping) o un mapeo más denso para entornos más complejos o desconocidos, permitiendo al robot construir mapas más detallados y navegar en áreas más grandes.
-* Integrar planificación incremental o replanificación dinámica para ambientes altamente dinámicos, donde los obstáculos pueden moverse con frecuencia, para adaptar la ruta de forma más fluida.More actions
+* Implementar un control proporcional (P, PI o PID) más sofisticado para el seguimiento de la ruta, lo que permitiría trayectorias más suaves y precisas.
+* Optimizar la ruta generada por RRT utilizando algoritmos de suavizado de caminos para reducir la distancia total recorrida y mejorar la eficiencia.
+* Considerar el uso de algoritmos de SLAM (Simultaneous Localization and Mapping) para entornos completamente desconocidos, permitiendo al robot construir mapas más detallados y navegar en áreas más grandes.
+* Explorar variantes de RRT, como RRT*, que convergen hacia una ruta óptima a medida que se añaden más muestras, balanceando la velocidad de RRT con la calidad de ruta de otros algoritmos.
 
-## Demostración
+## Instalación y Ejecución
 
-[ **ESPACIO PARA EL VIDEO DE DEMOSTRACIÓN** - ]
 
-```bash
-git clone https://github.com/GabrielSanzana/ProyectoFinalRobotica.git]
