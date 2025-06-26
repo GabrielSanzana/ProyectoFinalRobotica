@@ -94,6 +94,5 @@ A continuación, se presentan los resultados de una ejecución de prueba, demost
 * Considerar el uso de algoritmos de SLAM (Simultaneous Localization and Mapping) para entornos completamente desconocidos, permitiendo al robot construir mapas más detallados y navegar en áreas más grandes.
 * Explorar variantes de RRT, como RRT*, que convergen hacia una ruta óptima a medida que se añaden más muestras, balanceando la velocidad de RRT con la calidad de ruta de otros algoritmos.
 
-## Instalación y Ejecución
 
 
