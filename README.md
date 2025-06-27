@@ -66,6 +66,10 @@ Aquí se presentan los diagramas que representan el sistema del robot y su inter
 
 ![Diagrama de Bajo Nivel de Arquitectura](bajoNivelRobot.png)
 
+### Diagrama de flujos
+
+![Diagrama de flujos](DiagramaDeFlujo.drawio.png)
+
 ### Pseudocódigo
 
 INICIO
