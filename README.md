@@ -60,11 +60,11 @@ Aquí se presentan los diagramas que representan el sistema del robot y su inter
 
 ### Diagrama de Alto Nivel
 
-![Diagrama de Alto Nivel del Robot](altoNivelRobot.drawio.png)
+![Diagrama de Alto Nivel del Robot](altoNivelRobot.png)
 
 ### Diagrama de Bajo Nivel (Arquitectura Interna o Flujo de Control)
 
-![Diagrama de Bajo Nivel de Arquitectura](bajoNivelRobot.drawio.png)
+![Diagrama de Bajo Nivel de Arquitectura](bajoNivelRobot.png)
 
 ## Demostración
 
