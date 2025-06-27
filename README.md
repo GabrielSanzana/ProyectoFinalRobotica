@@ -72,6 +72,7 @@ Aquí se presentan los diagramas que representan el sistema del robot y su inter
 
 ### Pseudocódigo
 
+```plaintext
 INICIO
 
   // Inicializar Webots y dispositivos
@@ -171,6 +172,7 @@ INICIO
 
   limpiar_simulador()
 FIN
+```
 
 ## Demostración
 
