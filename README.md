@@ -66,6 +66,108 @@ Aquí se presentan los diagramas que representan el sistema del robot y su inter
 
 ![Diagrama de Bajo Nivel de Arquitectura](bajoNivelRobot.png)
 
+### Pseudocódigo
+
+INICIO
+
+  // Inicializar Webots y dispositivos
+  inicializar_simulador()
+  motores ← inicializar_motores(4)      // 4 ruedas
+  sensores_distancia ← inicializar_sensores_distancia(2)
+  lidar ← inicializar_lidar()
+  gps ← inicializar_gps()
+
+  // Inicializar variables
+  GRID_SIZE ← definir_tamaño_grid()
+  grid ← crear_grid(GRID_SIZE, GRID_SIZE)
+  path ← crear_array_path(MAX_PATH_LEN)
+  tiempo_inicio ← obtener_tiempo_actual()
+  last_metrics_time ← tiempo_inicio
+
+  MIENTRAS simulador_esta_activo() HACER
+
+    // --- Detección de obstáculos con sensores de distancia ---
+    ds_detect_near ← FALSO
+    PARA sensor EN sensores_distancia HACER
+      lectura ← leer_sensor(sensor)
+      SI lectura < UMBRAL_DISTANCIA ENTONCES
+        ds_detect_near ← VERDADERO
+      FIN SI
+    FIN PARA
+
+    // --- Obtener posición actual del GPS ---
+    robot_x, robot_y ← leer_gps(gps)
+
+    // --- Actualizar mapa con datos del LIDAR ---
+    limpiar_grid(grid)
+    lidar_detect_near ← FALSO
+    escaneo ← obtener_puntos_lidar(lidar)
+    PARA punto EN escaneo HACER
+      SI es_valida(punto.distancia) Y punto.distancia < RANGO_MAX_LIDAR ENTONCES
+        obs_x, obs_y ← calcular_pos_obstaculo(robot_x, robot_y, punto)
+        cell_x, cell_y ← convertir_a_grid(obs_x, obs_y)
+        SI dentro_del_grid(cell_x, cell_y, GRID_SIZE) ENTONCES
+          grid[cell_x][cell_y] ← 1   // Marcar obstáculo
+          SI punto.distancia < UMBRAL_CERCANO_LIDAR ENTONCES
+            lidar_detect_near ← VERDADERO
+          FIN SI
+        FIN SI
+      FIN SI
+    FIN PARA
+
+    // --- Marcar posición actual en el grid ---
+    robot_cell_x, robot_cell_y ← convertir_a_grid(robot_x, robot_y)
+    grid[robot_cell_x][robot_cell_y] ← 2   // Explorada
+
+    // --- Planificación de ruta con A* ---
+    start ← (robot_cell_x, robot_cell_y)
+    goal ← (GRID_SIZE-2, GRID_SIZE-2)  // O definir stop_x, stop_y según objetivo
+    path_length ← planificar_ruta_astar(grid, start, goal, path, MAX_PATH_LEN)
+
+    // --- Control de movimiento ---
+    SI lidar_detect_near O ds_detect_near ENTONCES
+      // Girar para evitar obstáculo
+      left_speed ← SPEED
+      right_speed ← -SPEED
+    SINO SI path_length <= 1 ENTONCES
+      // Girar para explorar o buscar nueva ruta
+      left_speed ← SPEED
+      right_speed ← -SPEED
+    SINO
+      // Avanzar siguiendo el path
+      left_speed ← SPEED
+      right_speed ← SPEED
+    FIN SI
+
+    aplicar_velocidades_motores(motores, left_speed, right_speed)
+
+    // --- Reporte de métricas cada 5 segundos ---
+    tiempo_actual ← obtener_tiempo_actual()
+    SI tiempo_actual - last_metrics_time >= 5 ENTONCES
+      porcentaje_explorado ← calcular_porcentaje_explorado(grid)
+      mostrar_métricas(
+        tiempo_navegacion = tiempo_actual - tiempo_inicio,
+        longitud_path = path_length,
+        tiempo_planificacion = medir_tiempo_planificacion(),
+        porcentaje_explorado = porcentaje_explorado,
+        posicion_gps = (robot_x, robot_y),
+        valores_sensores = obtener_valores_sensores(sensores_distancia, lidar),
+        mapa_ascii = imprimir_grid_ascii(grid)
+      )
+      last_metrics_time ← tiempo_actual
+    FIN SI
+
+    // --- Condición de parada ---
+    SI robot_cell_x == stop_x Y robot_cell_y == stop_y ENTONCES
+      detener_motores(motores)
+      terminar_programa()
+    FIN SI
+
+  FIN MIENTRAS
+
+  limpiar_simulador()
+FIN
+
 ## Demostración
 
 https://www.youtube.com/watch?v=mXffI4usjAo&ab_channel=lRaging
