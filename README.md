@@ -14,6 +14,30 @@
 
 El presente proyecto tiene como objetivo el desarrollo e implementación de un robot móvil autónomo de 4 ruedas en el simulador Webots. El sistema integra control cinemático diferencial y una variedad de sensores para la percepción y navegación en un entorno con obstáculos.
 
+## Descripción del Robot y sus Características
+
+El robot móvil autónomo desarrollado para este proyecto es una plataforma de 4 ruedas diseñada para operar en un entorno simulado dentro de Webots R2025a. Su principal objetivo es la navegación autónoma, la detección y evasión de obstáculos, y la planificación de rutas eficientes hacia un objetivo definido.
+
+* Características Físicas y Cinemáticas
+  
+- Tipo de Robot: Robot móvil de 4 ruedas.
+
+- Control de Movimiento: Utiliza control cinemático diferencial, lo que le permite ajustar las velocidades de las ruedas izquierdas y derechas (motor1, motor2, motor3, motor4 en Webots) para lograr movimientos de avance/retroceso y giros en el lugar o durante el desplazamiento.
+
+- Dimensiones (referenciales del modelo Cuerpo y Rueda en mundo_virtual.wbt)
+
+- Cuerpo: 0.2m x 0.1m x 0.05m (ancho, alto, profundidad).
+
+- Ruedas: Cilindros de 0.04m de radio y 0.02m de altura.
+
+- Sensores para Percepción del Entorno:
+El robot está equipado con un conjunto de sensores que le permiten percibir su entorno y construir un mapa local:
+   
+   * LIDAR 2D: capaz de detectar obstáculos hasta 0.8 metros de distancia.
+   * Sensores de Distancia 
+   * GPS (Global Positioning System):
+   * Unidad Inercial (IMU - Inertial Unit)
+
 El robot es capaz de:
 * Detectar obstáculos en tiempo real mediante la combinación de un sensor LIDAR y sensores de distancia.
 * Construir un mapa de ocupación local del entorno a partir de los datos del LIDAR.
