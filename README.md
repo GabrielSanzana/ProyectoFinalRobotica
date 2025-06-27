@@ -68,7 +68,7 @@ Aquí se presentan los diagramas que representan el sistema del robot y su inter
 
 ### Diagrama de flujos
 
-![Diagrama de flujos](DiagramaDeFlujo.drawio.png)
+![Diagrama de flujos](DiagramDeFlujo.drawio.png)
 
 ### Pseudocódigo
 
